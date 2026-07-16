@@ -1,0 +1,7 @@
+# devpilot:start
+docs/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+# devpilot:end
