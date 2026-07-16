@@ -77,7 +77,7 @@
 **Goal:** Monitoring tenant untuk pemilik platform, QA menyeluruh, dan kesiapan produksi.
 **Depends on:** Phase 5
 
-- [ ] 6.1 Panel Super Admin (daftar & monitoring tenant)
+- [x] 6.1 Panel Super Admin (daftar & monitoring tenant)
 - [ ] 6.2 Uji end-to-end alur offline-to-online sync
 - [ ] 6.3 Uji UX dengan skenario pengguna awam/gaptek
 - [ ] 6.4 Perbaikan bug & polish UI/UX final
