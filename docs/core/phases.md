@@ -8,14 +8,14 @@
 
 | Phase | Name | Status | Checkpoint commit |
 |---|---|---|---|
-| 1 | Setup Proyek & Fondasi Multi-Tenant | in progress | |
+| 1 | Setup Proyek & Fondasi Multi-Tenant | done | e2f7075 |
 | 2 | Manajemen Barang & Stok | pending | |
 | 3 | Barang Titipan (Consignment) | pending | |
 | 4 | Transaksi Kasir (POS) & Offline Mode | pending | |
 | 5 | Laporan & Insight | pending | |
 | 6 | Panel Super Admin & Hardening | pending | |
 
-## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[in progress]`
+## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
 
 **Goal:** Project scaffolding, koneksi Supabase, skema database dasar, autentikasi, dan isolasi tenant siap dipakai fase-fase berikutnya.
 **Depends on:** —
@@ -26,7 +26,7 @@
 - [x] 1.4 Implementasi RLS policies untuk isolasi data per tenant
 - [x] 1.5 Implementasi autentikasi (login, session) untuk Admin & Kasir
 - [x] 1.6 Halaman registrasi tenant mandiri (self-service signup)
-- [ ] 1.7 Setup deployment awal ke Vercel
+- [x] 1.7 Setup deployment awal ke Vercel
 
 ## Phase 2 — Manajemen Barang & Stok `[pending]`
 
