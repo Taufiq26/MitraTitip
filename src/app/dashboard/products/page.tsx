@@ -1,0 +1,98 @@
+import { redirect } from "next/navigation";
+import { getCurrentProfile } from "@/lib/auth/get-current-profile";
+import { createClient } from "@/lib/supabase/server";
+import { mapProductRow, type ProductRow } from "@/lib/types/product";
+import { ProductDialog } from "./product-dialog";
+import { DeleteProductButton } from "./delete-product-button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+
+export default async function ProductsPage() {
+  const profile = await getCurrentProfile();
+  if (profile.role !== "admin") {
+    redirect("/dashboard");
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("*")
+    .order("name")
+    .returns<ProductRow[]>();
+
+  const products = (data ?? []).map(mapProductRow);
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Barang</h1>
+        <ProductDialog />
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nama</TableHead>
+            <TableHead>Barcode</TableHead>
+            <TableHead>Harga Modal</TableHead>
+            <TableHead>Harga Jual</TableHead>
+            <TableHead>Stok</TableHead>
+            <TableHead className="text-right">Aksi</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                Belum ada barang. Tambahkan barang pertama Anda.
+              </TableCell>
+            </TableRow>
+          )}
+          {products.map((product) => {
+            const isLowStock =
+              product.trackStock &&
+              product.lowStockThreshold !== null &&
+              product.stockQty <= product.lowStockThreshold;
+
+            return (
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>{product.barcode ?? "-"}</TableCell>
+                <TableCell>{currencyFormatter.format(product.costPrice)}</TableCell>
+                <TableCell>{currencyFormatter.format(product.sellPrice)}</TableCell>
+                <TableCell>
+                  {product.trackStock ? (
+                    <span className="flex items-center gap-2">
+                      {product.stockQty}
+                      {isLowStock && <Badge variant="destructive">Stok rendah</Badge>}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Tanpa lacak stok</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <ProductDialog product={product} />
+                    <DeleteProductButton productId={product.id} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

@@ -9,7 +9,7 @@
 | Phase | Name | Status | Checkpoint commit |
 |---|---|---|---|
 | 1 | Setup Proyek & Fondasi Multi-Tenant | done | e2f7075 |
-| 2 | Manajemen Barang & Stok | pending | |
+| 2 | Manajemen Barang & Stok | done | |
 | 3 | Barang Titipan (Consignment) | pending | |
 | 4 | Transaksi Kasir (POS) & Offline Mode | pending | |
 | 5 | Laporan & Insight | pending | |
@@ -28,15 +28,15 @@
 - [x] 1.6 Halaman registrasi tenant mandiri (self-service signup)
 - [x] 1.7 Setup deployment awal ke Vercel
 
-## Phase 2 — Manajemen Barang & Stok `[pending]`
+## Phase 2 — Manajemen Barang & Stok `[done]`
 
 **Goal:** Admin dapat mengelola barang dan sistem melacak stok secara otomatis.
 **Depends on:** Phase 1
 
-- [ ] 2.1 CRUD produk (nama, barcode, kategori, harga modal, harga jual, satuan)
-- [ ] 2.2 Toggle pelacakan stok per produk
-- [ ] 2.3 Logika update stok otomatis (dipanggil dari transaksi di Phase 4)
-- [ ] 2.4 Halaman daftar/notifikasi low stock
+- [x] 2.1 CRUD produk (nama, barcode, kategori, harga modal, harga jual, satuan)
+- [x] 2.2 Toggle pelacakan stok per produk
+- [x] 2.3 Logika update stok otomatis (dipanggil dari transaksi di Phase 4)
+- [x] 2.4 Halaman daftar/notifikasi low stock
 
 ## Phase 3 — Barang Titipan (Consignment) `[pending]`
 
