@@ -12,7 +12,7 @@
 | 2 | Manajemen Barang & Stok | done | |
 | 3 | Barang Titipan (Consignment) | done | |
 | 4 | Transaksi Kasir (POS) & Offline Mode | done | |
-| 5 | Laporan & Insight | pending | |
+| 5 | Laporan & Insight | done | |
 | 6 | Panel Super Admin & Hardening | pending | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
@@ -62,15 +62,15 @@
 - [x] 4.6 Penyimpanan transaksi lokal (Dexie/IndexedDB) saat offline
 - [x] 4.7 Antrian sinkronisasi otomatis & resolusi konflik ke Supabase
 
-## Phase 5 — Laporan & Insight `[pending]`
+## Phase 5 — Laporan & Insight `[done]`
 
 **Goal:** Dashboard laporan penjualan, laba, dan insight bisnis untuk Admin.
 **Depends on:** Phase 4
 
-- [ ] 5.1 Laporan penjualan per periode & metode pembayaran
-- [ ] 5.2 Laporan laba kotor & laba bersih
-- [ ] 5.3 Insight produk terlaris
-- [ ] 5.4 Dashboard ringkasan Admin
+- [x] 5.1 Laporan penjualan per periode & metode pembayaran
+- [x] 5.2 Laporan laba kotor & laba bersih
+- [x] 5.3 Insight produk terlaris
+- [x] 5.4 Dashboard ringkasan Admin
 
 ## Phase 6 — Panel Super Admin & Hardening `[pending]`
 

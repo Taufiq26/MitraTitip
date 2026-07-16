@@ -12,6 +12,7 @@ const ADMIN_NAV = [
   { href: "/dashboard/products", label: "Barang" },
   { href: "/dashboard/consignors", label: "Penitip" },
   { href: "/dashboard/settlements", label: "Settlement" },
+  { href: "/dashboard/reports", label: "Laporan" },
 ];
 
 export default async function DashboardLayout({
