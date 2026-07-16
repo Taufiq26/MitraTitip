@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MitraTitip
 
-## Getting Started
+Aplikasi kasir (POS) berbasis web untuk UMKM dan kantin sekolah — mendukung
+barcode scanner, manajemen stok, barang titipan (consignment) dengan fee
+otomatis, laporan penjualan/laba, dan bekerja offline dengan sinkronisasi
+otomatis. Multi-tenant: setiap toko yang mendaftar bersifat independen.
 
-First, run the development server:
+Dokumentasi lengkap (requirements, arsitektur, skema database, rencana
+fase pengembangan) ada di [`docs/core/`](./docs/core/).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Live
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Production: https://mitratitip.vercel.app
+- Panel Super Admin: https://mitratitip.vercel.app/super-admin (khusus akun `super_admin`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js 16 (App Router, TypeScript) · Tailwind CSS + shadcn/ui (Base UI) ·
+Supabase (Postgres + Auth) · Dexie.js (IndexedDB, offline-first) · PWA ·
+Vercel.
 
-## Learn More
+## Setup lokal
 
-To learn more about Next.js, take a look at the following resources:
+1. Install dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Salin `.env.example` ke `.env.local` dan isi dengan kredensial Supabase
+   project Anda (Project Settings → API di dashboard Supabase):
 
-## Deploy on Vercel
+   ```bash
+   cp .env.example .env.local
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Jalankan migration database. Buka **SQL Editor** di dashboard Supabase
+   project Anda, lalu jalankan file di `supabase/migrations/` **berurutan
+   sesuai nomornya** (0001, 0002, 0003, ...):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   - `0001_init.sql` — skema tabel inti (tenants, profiles, products, dst.)
+   - `0002_rls.sql` — Row Level Security untuk isolasi data antar tenant
+   - `0003_stock_functions.sql` — fungsi pengurangan stok otomatis
+   - `0004_settlement_functions.sql` — fungsi perhitungan settlement titipan
+   - `0005_consignment_sale_function.sql` — fungsi update qty terjual titipan
+
+4. Jalankan development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Buka [http://localhost:3000](http://localhost:3000).
+
+## Catatan penting
+
+- **Service worker (PWA) hanya aktif di production build.** Di development,
+  service worker sengaja tidak didaftarkan karena bentrok dengan Fast
+  Refresh/HMR Next.js.
+- Registrasi tenant baru (self-service) tersedia di halaman `/register`.
+  Akun pertama yang dibuat otomatis berperan sebagai Admin untuk tenant
+  tersebut.
+- Akun `super_admin` (untuk memantau daftar tenant di `/super-admin`) tidak
+  bisa dibuat lewat `/register` — buat manual lewat Supabase Auth lalu set
+  `role = 'super_admin'` pada baris `profiles` terkait (kolom `tenant_id`
+  dibiarkan `null`).
+
+## Struktur dokumentasi project
+
+| Dokumen | Isi |
+|---|---|
+| `docs/core/requirements.md` | Tujuan produk, functional & non-functional requirements |
+| `docs/core/architecture.md` | Diagram sistem, komponen, environment |
+| `docs/core/database.md` | ERD dan definisi tabel |
+| `docs/core/api-contract.md` | Kontrak endpoint API custom |
+| `docs/core/features.md` | Daftar fitur & estimasi mandays per modul |
+| `docs/core/phases.md` | Rencana & progres eksekusi per fase |
+
+## Deploy
+
+Repo ini terhubung ke Vercel dan auto-deploy setiap push ke branch `main`.

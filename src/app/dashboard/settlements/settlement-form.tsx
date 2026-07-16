@@ -65,7 +65,9 @@ export function SettlementForm({
             onValueChange={(value) => setConsignorId(value ?? "")}
           >
             <SelectTrigger id="consignorId" className="w-full">
-              <SelectValue placeholder="Pilih penitip" />
+              <SelectValue placeholder="Pilih penitip">
+                {consignors.find((c) => c.id === consignorId)?.name}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {consignors.map((c) => (

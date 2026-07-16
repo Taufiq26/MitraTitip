@@ -13,7 +13,7 @@
 | 3 | Barang Titipan (Consignment) | done | |
 | 4 | Transaksi Kasir (POS) & Offline Mode | done | |
 | 5 | Laporan & Insight | done | |
-| 6 | Panel Super Admin & Hardening | pending | |
+| 6 | Panel Super Admin & Hardening | done | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
 
@@ -72,13 +72,13 @@
 - [x] 5.3 Insight produk terlaris
 - [x] 5.4 Dashboard ringkasan Admin
 
-## Phase 6 — Panel Super Admin & Hardening `[pending]`
+## Phase 6 — Panel Super Admin & Hardening `[done]`
 
 **Goal:** Monitoring tenant untuk pemilik platform, QA menyeluruh, dan kesiapan produksi.
 **Depends on:** Phase 5
 
 - [x] 6.1 Panel Super Admin (daftar & monitoring tenant)
-- [ ] 6.2 Uji end-to-end alur offline-to-online sync
-- [ ] 6.3 Uji UX dengan skenario pengguna awam/gaptek
-- [ ] 6.4 Perbaikan bug & polish UI/UX final
-- [ ] 6.5 Deployment production & dokumentasi akhir
+- [x] 6.2 Uji end-to-end alur offline-to-online sync
+- [x] 6.3 Uji UX dengan skenario pengguna awam/gaptek
+- [x] 6.4 Perbaikan bug & polish UI/UX final
+- [x] 6.5 Deployment production & dokumentasi akhir
