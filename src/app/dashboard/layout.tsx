@@ -3,8 +3,12 @@ import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { logout } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
 
-const ADMIN_NAV = [
+const BASE_NAV = [
   { href: "/dashboard", label: "Ringkasan" },
+  { href: "/dashboard/pos", label: "Kasir" },
+];
+
+const ADMIN_NAV = [
   { href: "/dashboard/products", label: "Barang" },
   { href: "/dashboard/consignors", label: "Penitip" },
   { href: "/dashboard/settlements", label: "Settlement" },
@@ -27,9 +31,9 @@ export default async function DashboardLayout({
               {profile.fullName} &middot; {profile.role === "admin" ? "Admin" : "Kasir"}
             </p>
           </div>
-          {profile.role === "admin" && (
-            <nav className="flex items-center gap-4">
-              {ADMIN_NAV.map((item) => (
+          <nav className="flex items-center gap-4">
+            {[...BASE_NAV, ...(profile.role === "admin" ? ADMIN_NAV : [])].map(
+              (item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -37,9 +41,9 @@ export default async function DashboardLayout({
                 >
                   {item.label}
                 </Link>
-              ))}
-            </nav>
-          )}
+              ),
+            )}
+          </nav>
         </div>
         <form action={logout}>
           <Button type="submit" variant="outline" size="sm">

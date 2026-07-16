@@ -1,0 +1,18 @@
+{
+  "name": "MitraTitip",
+  "short_name": "MitraTitip",
+  "description": "Aplikasi kasir untuk UMKM dan kantin sekolah",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

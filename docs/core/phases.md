@@ -11,7 +11,7 @@
 | 1 | Setup Proyek & Fondasi Multi-Tenant | done | e2f7075 |
 | 2 | Manajemen Barang & Stok | done | |
 | 3 | Barang Titipan (Consignment) | done | |
-| 4 | Transaksi Kasir (POS) & Offline Mode | pending | |
+| 4 | Transaksi Kasir (POS) & Offline Mode | done | |
 | 5 | Laporan & Insight | pending | |
 | 6 | Panel Super Admin & Hardening | pending | |
 
@@ -49,18 +49,18 @@
 - [x] 3.4 Proses retur barang titipan yang tidak terjual
 - [x] 3.5 Generate rekap settlement (preview) + finalisasi
 
-## Phase 4 — Transaksi Kasir (POS) & Offline Mode `[pending]`
+## Phase 4 — Transaksi Kasir (POS) & Offline Mode `[done]`
 
 **Goal:** Alur kasir lengkap: scan barcode, pembayaran, preview struk, bekerja offline dengan sinkronisasi otomatis.
 **Depends on:** Phase 2, Phase 3
 
-- [ ] 4.1 UI transaksi kasir & keranjang belanja
-- [ ] 4.2 Integrasi scan barcode (USB scanner & kamera)
-- [ ] 4.3 Metode pembayaran (tunai + kembalian, QRIS, transfer)
-- [ ] 4.4 Preview & format struk (cetak opsional, siap integrasi printer termal)
-- [ ] 4.5 Setup PWA & service worker
-- [ ] 4.6 Penyimpanan transaksi lokal (Dexie/IndexedDB) saat offline
-- [ ] 4.7 Antrian sinkronisasi otomatis & resolusi konflik ke Supabase
+- [x] 4.1 UI transaksi kasir & keranjang belanja
+- [x] 4.2 Integrasi scan barcode (USB scanner & kamera)
+- [x] 4.3 Metode pembayaran (tunai + kembalian, QRIS, transfer)
+- [x] 4.4 Preview & format struk (cetak opsional, siap integrasi printer termal)
+- [x] 4.5 Setup PWA & service worker
+- [x] 4.6 Penyimpanan transaksi lokal (Dexie/IndexedDB) saat offline
+- [x] 4.7 Antrian sinkronisasi otomatis & resolusi konflik ke Supabase
 
 ## Phase 5 — Laporan & Insight `[pending]`
 
