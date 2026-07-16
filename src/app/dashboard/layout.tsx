@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 const ADMIN_NAV = [
   { href: "/dashboard", label: "Ringkasan" },
   { href: "/dashboard/products", label: "Barang" },
+  { href: "/dashboard/consignors", label: "Penitip" },
+  { href: "/dashboard/settlements", label: "Settlement" },
 ];
 
 export default async function DashboardLayout({

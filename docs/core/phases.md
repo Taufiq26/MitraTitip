@@ -10,7 +10,7 @@
 |---|---|---|---|
 | 1 | Setup Proyek & Fondasi Multi-Tenant | done | e2f7075 |
 | 2 | Manajemen Barang & Stok | done | |
-| 3 | Barang Titipan (Consignment) | pending | |
+| 3 | Barang Titipan (Consignment) | done | |
 | 4 | Transaksi Kasir (POS) & Offline Mode | pending | |
 | 5 | Laporan & Insight | pending | |
 | 6 | Panel Super Admin & Hardening | pending | |
@@ -38,16 +38,16 @@
 - [x] 2.3 Logika update stok otomatis (dipanggil dari transaksi di Phase 4)
 - [x] 2.4 Halaman daftar/notifikasi low stock
 
-## Phase 3 — Barang Titipan (Consignment) `[pending]`
+## Phase 3 — Barang Titipan (Consignment) `[done]`
 
 **Goal:** Fitur titipan lengkap: registrasi, perhitungan fee, retur, dan settlement.
 **Depends on:** Phase 2
 
-- [ ] 3.1 CRUD data penitip
-- [ ] 3.2 Registrasi batch barang titipan (harian, qty, fee % default 10%)
-- [ ] 3.3 Logika perhitungan otomatis bagian penitip (dipakai saat barang terjual di Phase 4)
-- [ ] 3.4 Proses retur barang titipan yang tidak terjual
-- [ ] 3.5 Generate rekap settlement (preview) + finalisasi
+- [x] 3.1 CRUD data penitip
+- [x] 3.2 Registrasi batch barang titipan (harian, qty, fee % default 10%)
+- [x] 3.3 Logika perhitungan otomatis bagian penitip (dipakai saat barang terjual di Phase 4)
+- [x] 3.4 Proses retur barang titipan yang tidak terjual
+- [x] 3.5 Generate rekap settlement (preview) + finalisasi
 
 ## Phase 4 — Transaksi Kasir (POS) & Offline Mode `[pending]`
 
