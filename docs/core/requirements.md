@@ -19,7 +19,7 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 - **FR-1** — Admin dan Kasir dapat login dengan akun yang terikat ke satu tenant (toko)
 - **FR-2** — Super Admin dapat login ke panel khusus untuk memantau daftar tenant terdaftar
 - **FR-3** — Sistem mendukung pendaftaran tenant baru secara mandiri (self-service signup) yang otomatis membuat akun Admin untuk tenant tersebut
-- **FR-4** — Admin dapat menambah, mengubah, dan menghapus data barang (nama, kode/barcode, kategori, harga modal, harga jual, satuan); barang yang sudah punya riwayat penjualan tidak bisa dihapus permanen (integritas data transaksi terjaga)
+- **FR-4** — Admin dapat menambah, mengubah, dan menghapus data barang (nama, kode/barcode, kategori, harga modal, harga jual, satuan); menghapus barang tidak menghapus riwayat transaksi yang sudah terjadi (data penjualan lama tetap utuh meski barangnya sudah dihapus)
 - **FR-4a** — Admin dapat mengisi kode barcode saat menambah/mengubah barang lewat scan kamera, selain input manual
 - **FR-5** — Admin dapat menandai tiap barang sebagai "dilacak stok" atau "tidak dilacak stok"
 - **FR-6** — Sistem memperbarui stok barang secara otomatis setiap ada transaksi penjualan, untuk barang yang dilacak stok

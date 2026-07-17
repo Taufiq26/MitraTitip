@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +9,7 @@ export type CurrentProfile = {
   fullName: string;
 };
 
-export async function getCurrentProfile(): Promise<CurrentProfile> {
+export const getCurrentProfile = cache(async (): Promise<CurrentProfile> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -34,4 +35,4 @@ export async function getCurrentProfile(): Promise<CurrentProfile> {
     role: profile.role,
     fullName: profile.full_name,
   };
-}
+});

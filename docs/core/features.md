@@ -22,7 +22,7 @@
 | Update stok otomatis | Stok berkurang otomatis dari transaksi | must | 0.5 | 2 | 0 | 1 | 0 | 3.5 |
 | Insight low stock | Daftar/notifikasi barang stok rendah | should | 1.5 | 1 | 1 | 0.5 | 0 | 4 |
 | Scan barcode saat tambah barang | Isi field barcode lewat kamera di form tambah/edit produk | should | 1.5 | 0 | 0.5 | 0.5 | 0 | 2.5 |
-| Proteksi hapus barang dengan riwayat transaksi | Cegah hapus permanen barang yang sudah pernah terjual; FK transaction_items diubah SET NULL | must | 0.5 | 1 | 0 | 0.5 | 0 | 2 |
+| Jaga integritas riwayat transaksi | FK transaction_items diubah SET NULL agar riwayat penjualan tetap ada meski barangnya dihapus | must | 0.5 | 1 | 0 | 0.5 | 0 | 2 |
 
 ## Module: Barang Titipan (Consignment)
 

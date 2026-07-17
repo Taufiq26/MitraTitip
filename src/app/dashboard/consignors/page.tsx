@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { mapConsignorRow, type ConsignorRow } from "@/lib/types/consignor";
 import { ConsignorDialog } from "./consignor-dialog";
 import { DeleteConsignorButton } from "./delete-consignor-button";
+import { BatchDialog } from "./[id]/batch-dialog";
 import {
   Table,
   TableBody,
@@ -64,6 +65,7 @@ export default async function ConsignorsPage() {
               <TableCell>{consignor.phone ?? "-"}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <BatchDialog consignorId={consignor.id} />
                   <ConsignorDialog consignor={consignor} />
                   <DeleteConsignorButton consignorId={consignor.id} />
                 </div>

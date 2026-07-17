@@ -7,6 +7,7 @@ import {
   type ProductActionState,
 } from "./actions";
 import type { Product } from "@/lib/types/product";
+import { BarcodeCameraDialog } from "@/app/dashboard/pos/barcode-camera-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,8 @@ export function ProductDialog({ product }: { product?: Product }) {
     : createProduct;
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [trackStock, setTrackStock] = useState(product?.trackStock ?? true);
+  const [barcode, setBarcode] = useState(product?.barcode ?? "");
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -52,7 +55,21 @@ export function ProductDialog({ product }: { product?: Product }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="barcode">Barcode</Label>
-            <Input id="barcode" name="barcode" defaultValue={product?.barcode ?? ""} />
+            <div className="flex gap-2">
+              <Input
+                id="barcode"
+                name="barcode"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCameraOpen(true)}
+              >
+                Scan
+              </Button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Kategori</Label>
@@ -129,6 +146,11 @@ export function ProductDialog({ product }: { product?: Product }) {
           </Button>
         </form>
       </DialogContent>
+      <BarcodeCameraDialog
+        open={cameraOpen}
+        onOpenChange={setCameraOpen}
+        onScan={setBarcode}
+      />
     </Dialog>
   );
 }

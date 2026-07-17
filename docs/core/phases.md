@@ -14,7 +14,7 @@
 | 4 | Transaksi Kasir (POS) & Offline Mode | done | |
 | 5 | Laporan & Insight | done | |
 | 6 | Panel Super Admin & Hardening | done | |
-| 7 | Peningkatan Kasir, Penitip & Integritas Data | pending | |
+| 7 | Peningkatan Kasir, Penitip & Integritas Data | done | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
 
@@ -84,13 +84,13 @@
 - [x] 6.4 Perbaikan bug & polish UI/UX final
 - [x] 6.5 Deployment production & dokumentasi akhir
 
-## Phase 7 — Peningkatan Kasir, Penitip & Integritas Data `[pending]`
+## Phase 7 — Peningkatan Kasir, Penitip & Integritas Data `[done]`
 
 **Goal:** Promosi BL-1 (integritas data saat hapus barang/tenant) dan BL-2 (scan barcode tambah barang, performa navigasi, quick-add titipan, riwayat settlement + struk).
 **Depends on:** Phase 6
 
-- [ ] 7.1 Migration: `transaction_items.product_id` & `consignment_batch_id` jadi nullable + `on delete set null`; guard hapus barang yang punya riwayat transaksi (BL-1)
-- [ ] 7.2 Scan barcode kamera saat tambah/edit barang di halaman Barang
-- [ ] 7.3 Perbaikan performa navigasi: hilangkan auth check ganda (middleware + layout), tambah `loading.tsx` per rute dashboard
-- [ ] 7.4 Quick-add titipan langsung di baris tabel Penitip (reuse `BatchDialog`)
-- [ ] 7.5 Halaman riwayat settlement dengan badge status "Sudah Direalisasi" + lihat/cetak ulang struk
+- [x] 7.1 Migration: `transaction_items.product_id` & `consignment_batch_id` jadi nullable + `on delete set null`; guard hapus barang yang punya riwayat transaksi (BL-1)
+- [x] 7.2 Scan barcode kamera saat tambah/edit barang di halaman Barang
+- [x] 7.3 Perbaikan performa navigasi: hilangkan auth check ganda (middleware + layout), tambah `loading.tsx` per rute dashboard
+- [x] 7.4 Quick-add titipan langsung di baris tabel Penitip (reuse `BatchDialog`)
+- [x] 7.5 Halaman riwayat settlement dengan badge status "Sudah Direalisasi" + lihat/cetak ulang struk
