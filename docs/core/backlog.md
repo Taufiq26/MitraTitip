@@ -7,7 +7,7 @@
 ## BL-1 — Perbaiki urutan cascade delete saat penghapusan tenant
 
 - **Date deferred:** 2026-07-16
-- **Status:** deferred
+- **Status:** promoted (2026-07-17)
 - **Description:** Saat membersihkan data uji coba pasca-testing Phase 6,
   `DELETE` langsung pada baris `tenants` gagal dengan pelanggaran FK
   (`transaction_items_product_id_fkey`) karena `transaction_items.product_id`
@@ -32,7 +32,7 @@
 ## BL-2 — Scan barcode tambah barang, performa navigasi, quick-add titipan, riwayat settlement
 
 - **Date deferred:** 2026-07-17
-- **Status:** deferred
+- **Status:** promoted (2026-07-17)
 - **Description:** Empat perbaikan diminta user lewat `/devpilot feature`:
   1. Scan barcode kamera saat menambah barang baru di halaman Barang (saat
      ini field barcode di form tambah/edit produk hanya bisa diketik manual;

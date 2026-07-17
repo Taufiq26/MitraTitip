@@ -37,3 +37,4 @@ flowchart LR
 - Antrian sinkronisasi (sync queue) harus idempotent, memakai `local_id` yang digenerate client agar transaksi tidak terduplikasi saat retry
 - Backup otomatis mengandalkan fitur backup bawaan Supabase (Point-in-Time Recovery tersedia di tier berbayar)
 - Potensi bottleneck: sinkronisasi massal saat banyak tenant online bersamaan setelah offline dalam waktu lama — perlu strategi batching pada fase implementasi sync
+- Navigasi antar halaman dashboard tidak boleh melakukan pengecekan auth berulang (middleware + layout masing-masing memanggil `getUser()`) — cukup satu kali per request; tiap rute dashboard sebaiknya punya `loading.tsx` agar transisi terasa instan walau data masih dimuat

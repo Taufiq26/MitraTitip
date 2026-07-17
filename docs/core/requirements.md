@@ -19,15 +19,17 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 - **FR-1** — Admin dan Kasir dapat login dengan akun yang terikat ke satu tenant (toko)
 - **FR-2** — Super Admin dapat login ke panel khusus untuk memantau daftar tenant terdaftar
 - **FR-3** — Sistem mendukung pendaftaran tenant baru secara mandiri (self-service signup) yang otomatis membuat akun Admin untuk tenant tersebut
-- **FR-4** — Admin dapat menambah, mengubah, dan menghapus data barang (nama, kode/barcode, kategori, harga modal, harga jual, satuan)
+- **FR-4** — Admin dapat menambah, mengubah, dan menghapus data barang (nama, kode/barcode, kategori, harga modal, harga jual, satuan); barang yang sudah punya riwayat penjualan tidak bisa dihapus permanen (integritas data transaksi terjaga)
+- **FR-4a** — Admin dapat mengisi kode barcode saat menambah/mengubah barang lewat scan kamera, selain input manual
 - **FR-5** — Admin dapat menandai tiap barang sebagai "dilacak stok" atau "tidak dilacak stok"
 - **FR-6** — Sistem memperbarui stok barang secara otomatis setiap ada transaksi penjualan, untuk barang yang dilacak stok
 - **FR-7** — Kasir dapat mencari dan menambahkan barang ke transaksi dengan scan barcode, baik menggunakan USB scanner maupun kamera perangkat
-- **FR-8** — Admin dapat mendaftarkan data penitip dan barang titipan, termasuk persentase fee (default 10%, dapat diubah per titipan)
+- **FR-8** — Admin dapat mendaftarkan data penitip dan barang titipan, termasuk persentase fee (default 10%, dapat diubah per titipan); registrasi titipan dapat dilakukan langsung dari daftar penitip tanpa harus membuka halaman detail terlebih dahulu
 - **FR-9** — Sistem mendukung barang titipan yang bersifat harian, dengan pencatatan tanggal barang diterima
 - **FR-10** — Sistem menghitung otomatis bagian penitip (harga jual dikurangi fee) setiap kali barang titipan terjual
 - **FR-11** — Admin dapat memproses retur barang titipan yang tidak terjual, mengembalikan sisa barang ke penitip
 - **FR-12** — Sistem menghasilkan rekap settlement titipan per penitip untuk periode tertentu, dengan preview yang bisa dilihat sebelum dicetak (cetak bersifat opsional)
+- **FR-12a** — Admin dapat melihat riwayat settlement yang sudah difinalisasi (ditandai status "Sudah Direalisasi") per penitip, serta melihat/mencetak ulang struknya kapan saja
 - **FR-13** — Kasir dapat memproses transaksi dengan metode pembayaran tunai, QRIS, atau transfer bank, dicatat sebagai catatan kas/saldo per metode (bukan payment gateway)
 - **FR-14** — Sistem menghitung kembalian otomatis untuk pembayaran tunai
 - **FR-15** — Kasir dapat melihat preview struk sebelum transaksi selesai; cetak struk opsional dan default tanpa integrasi printer termal, namun format struk disiapkan untuk integrasi printer di masa depan
@@ -46,6 +48,7 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 - **NFR-3** — Reliability: transaksi yang dibuat saat offline tidak boleh hilang; proses sinkronisasi harus idempotent dan aman terhadap koneksi terputus di tengah proses
 - **NFR-4** — Performance: pencarian barang via scan barcode merespons dalam < 300ms agar alur kasir tetap cepat
 - **NFR-5** — Compatibility: aplikasi berjalan baik di browser desktop (laptop) maupun tablet layar sentuh
+- **NFR-6** — Performance: perpindahan antar halaman dashboard tidak boleh terasa freeze; hindari pengecekan autentikasi berulang per navigasi dan tampilkan feedback loading instan
 
 ## Out of scope
 

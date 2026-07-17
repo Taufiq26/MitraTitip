@@ -21,6 +21,8 @@
 | Toggle pelacakan stok | Opsi jual dengan/tanpa lacak stok per produk | must | 1 | 1 | 0.5 | 0.5 | 0 | 3 |
 | Update stok otomatis | Stok berkurang otomatis dari transaksi | must | 0.5 | 2 | 0 | 1 | 0 | 3.5 |
 | Insight low stock | Daftar/notifikasi barang stok rendah | should | 1.5 | 1 | 1 | 0.5 | 0 | 4 |
+| Scan barcode saat tambah barang | Isi field barcode lewat kamera di form tambah/edit produk | should | 1.5 | 0 | 0.5 | 0.5 | 0 | 2.5 |
+| Proteksi hapus barang dengan riwayat transaksi | Cegah hapus permanen barang yang sudah pernah terjual; FK transaction_items diubah SET NULL | must | 0.5 | 1 | 0 | 0.5 | 0 | 2 |
 
 ## Module: Barang Titipan (Consignment)
 
@@ -31,6 +33,8 @@
 | Perhitungan fee otomatis | Bagian penitip dihitung tiap barang terjual | must | 0 | 2.5 | 0 | 1.5 | 0 | 4 |
 | Retur titipan tidak terjual | Kembalikan sisa stok titipan ke penitip | must | 1.5 | 1.5 | 0.5 | 1 | 0 | 4.5 |
 | Rekap settlement titipan | Preview + finalisasi rekap per penitip/periode | must | 2.5 | 1.5 | 1.5 | 1 | 0 | 6.5 |
+| Quick-add titipan dari list penitip | Tombol tambah titipan langsung di baris tabel penitip | should | 1 | 0 | 0.5 | 0.5 | 0 | 2 |
+| Riwayat settlement + struk | Daftar settlement sudah direalisasi dengan badge status + lihat/cetak ulang struk | should | 2.5 | 0.5 | 1 | 1 | 0 | 5 |
 
 ## Module: Transaksi Kasir (POS)
 
@@ -67,13 +71,19 @@
 | CI/CD pipeline dasar | Build & deploy otomatis dari git | should | 0 | 0 | 0 | 0 | 1.5 | 1.5 |
 | Environment staging/production | Pemisahan environment Vercel & Supabase | should | 0 | 0 | 0 | 0.5 | 1.5 | 2 |
 
+## Module: Peningkatan Kasir & Penitip (Phase 7)
+
+| Feature | Description | Priority | FE md | BE md | UI/UX md | QA md | DevOps md | Total |
+|---|---|---|---|---|---|---|---|---|
+| Perbaikan performa navigasi | Hilangkan auth check ganda (middleware+layout), tambah loading.tsx per rute | should | 1.5 | 0.5 | 0 | 0.5 | 0 | 2.5 |
+
 ## Totals
 
 | Division | Total mandays |
 |---|---|
-| Frontend | 44.5 |
-| Backend | 42.5 |
-| UI/UX | 19 |
-| QA | 28 |
+| Frontend | 51.5 |
+| Backend | 44.5 |
+| UI/UX | 21 |
+| QA | 31 |
 | DevOps | 7 |
-| **Grand total** | **141** |
+| **Grand total** | **155** |

@@ -181,8 +181,8 @@ erDiagram
 |---|---|---|---|
 | id | uuid | PK, default gen_random_uuid() | |
 | transaction_id | uuid | FK → transactions.id, not null | |
-| product_id | uuid | FK → products.id, not null | |
-| consignment_batch_id | uuid | FK → consignment_batches.id, nullable | terisi jika item barang titipan |
+| product_id | uuid | FK → products.id, nullable, `on delete set null` | null jika barang aslinya sudah dihapus; riwayat transaksi tetap ada |
+| consignment_batch_id | uuid | FK → consignment_batches.id, nullable, `on delete set null` | terisi jika item barang titipan |
 | qty | numeric | not null | |
 | unit_price | numeric | not null | harga jual saat transaksi (snapshot) |
 | cost_price_snapshot | numeric | not null | untuk hitung laba meski harga modal berubah nanti |
@@ -209,3 +209,4 @@ erDiagram
 | Date | Change | Reason / feature | Phase |
 |---|---|---|---|
 | 2026-07-16 | Skema awal: tenants, profiles, products, consignors, consignment_batches, transactions, transaction_items, settlements | init | 1 |
+| 2026-07-17 | `transaction_items.product_id` & `consignment_batch_id`: ubah FK jadi `on delete set null` (kolom jadi nullable) agar riwayat transaksi tetap tersimpan saat barang/batch titipan dihapus, dan cascade delete tenant tidak lagi gagal karena urutan FK (BL-1) | BL-1 | 7 |
