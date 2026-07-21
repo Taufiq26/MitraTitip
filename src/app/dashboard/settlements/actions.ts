@@ -137,6 +137,7 @@ export async function previewSettlement(
     .single();
 
   if (error || !data) {
+    console.error("Error computing consignor settlement:", error);
     return { error: "Gagal menghitung rekap settlement" };
   }
 
@@ -237,7 +238,10 @@ export async function finalizeSettlement(
     status: "paid",
   });
 
-  if (error) return { error: "Gagal menyimpan settlement" };
+  if (error) {
+    console.error("Error saving settlement:", error);
+    return { error: "Gagal menyimpan settlement" };
+  }
   return { error: null };
 }
 

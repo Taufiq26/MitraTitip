@@ -59,6 +59,7 @@ export async function createProduct(
   });
 
   if (error) {
+    console.error("Error creating product:", error);
     const message =
       error.code === "23505" ? "Barcode sudah dipakai" : "Gagal menyimpan produk";
     return { error: message };
@@ -101,6 +102,7 @@ export async function updateProduct(
     .eq("tenant_id", profile.tenantId);
 
   if (error) {
+    console.error("Error updating product:", error);
     const message =
       error.code === "23505" ? "Barcode sudah dipakai" : "Gagal menyimpan produk";
     return { error: message };
@@ -115,11 +117,15 @@ export async function deleteProduct(productId: string): Promise<void> {
   if (!profile.tenantId) return;
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("products")
     .delete()
     .eq("id", productId)
     .eq("tenant_id", profile.tenantId);
+
+  if (error) {
+    console.error("Error deleting product:", error);
+  }
 
   revalidatePath("/dashboard/products");
 }

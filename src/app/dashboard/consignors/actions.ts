@@ -34,7 +34,10 @@ export async function createConsignor(
     phone: parsed.data.phone,
   });
 
-  if (error) return { error: "Gagal menyimpan penitip" };
+  if (error) {
+    console.error("Error creating consignor:", error);
+    return { error: "Gagal menyimpan penitip" };
+  }
 
   revalidatePath("/dashboard/consignors");
   return { error: null };
@@ -63,7 +66,10 @@ export async function updateConsignor(
     .eq("id", consignorId)
     .eq("tenant_id", profile.tenantId);
 
-  if (error) return { error: "Gagal menyimpan penitip" };
+  if (error) {
+    console.error("Error updating consignor:", error);
+    return { error: "Gagal menyimpan penitip" };
+  }
 
   revalidatePath("/dashboard/consignors");
   return { error: null };
@@ -74,11 +80,15 @@ export async function deleteConsignor(consignorId: string): Promise<void> {
   if (!profile.tenantId) return;
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("consignors")
     .delete()
     .eq("id", consignorId)
     .eq("tenant_id", profile.tenantId);
+
+  if (error) {
+    console.error("Error deleting consignor:", error);
+  }
 
   revalidatePath("/dashboard/consignors");
 }
@@ -127,6 +137,7 @@ export async function createConsignmentBatch(
     .single();
 
   if (productError || !product) {
+    console.error("Error creating consignment product:", productError);
     return { error: "Gagal membuat data barang titipan" };
   }
 
@@ -142,6 +153,7 @@ export async function createConsignmentBatch(
     });
 
   if (batchError) {
+    console.error("Error creating consignment batch:", batchError);
     return { error: "Gagal menyimpan batch titipan" };
   }
 
