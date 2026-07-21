@@ -36,8 +36,12 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
+    <div className="relative space-y-8 min-h-[calc(100vh-10rem)]">
+      {/* Ambient Glows */}
+      <div className="pointer-events-none absolute -left-40 -top-40 -z-10 h-[60rem] w-[60rem] rounded-full bg-primary/20 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-20 right-0 -z-10 h-[50rem] w-[50rem] rounded-full bg-primary/10 blur-[120px]" />
+
+      <div className="space-y-2 relative z-10">
         <h1 className="text-4xl font-extrabold tracking-tight">
           Selamat datang, {profile.fullName.split(" ")[0]}
         </h1>
@@ -47,10 +51,10 @@ export default async function DashboardPage() {
       </div>
 
       {profile.role === "admin" && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 relative z-10">
           
           {/* Sales Bento */}
-          <div className="flex flex-col justify-between space-y-12 rounded-3xl bg-background p-8 shadow-sm">
+          <div className="flex flex-col justify-between space-y-12 rounded-3xl bg-gradient-to-br from-background to-primary/[0.05] p-8 shadow-sm ring-1 ring-foreground/5">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Penjualan Hari Ini</p>
               <p className="mt-1 text-sm font-medium text-muted-foreground/80">{todaySales?.transactionCount ?? 0} transaksi diselesaikan</p>
@@ -60,8 +64,8 @@ export default async function DashboardPage() {
               <p className="text-5xl font-black tracking-tighter sm:text-6xl text-foreground">
                 {currencyFormatter.format(todaySales?.totalRevenue ?? 0)}
               </p>
-              <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5">
-                <p className="text-sm font-bold text-primary">
+              <div className="inline-flex items-center rounded-full bg-primary/20 px-4 py-1.5 ring-1 ring-primary/30">
+                <p className="text-sm font-bold text-foreground/90">
                   Laba bersih: {currencyFormatter.format(todaySales?.netProfit ?? 0)}
                 </p>
               </div>
@@ -78,7 +82,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Stock Bento */}
-          <div className={`flex flex-col rounded-3xl p-8 shadow-sm ${lowStockProducts.length > 0 ? "bg-destructive/5" : "bg-background"}`}>
+          <div className={`flex flex-col rounded-3xl p-8 shadow-sm ring-1 ring-foreground/5 transition-colors ${lowStockProducts.length > 0 ? "bg-gradient-to-br from-background to-destructive/[0.08]" : "bg-background"}`}>
             <div className="mb-6 flex items-center justify-between">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status Stok Barang</p>
               {lowStockProducts.length > 0 && (
@@ -114,8 +118,11 @@ export default async function DashboardPage() {
       )}
 
       {profile.role === "kasir" && (
-        <div className="mx-auto flex max-w-xl flex-col items-center space-y-8 rounded-3xl bg-primary p-12 text-center text-primary-foreground shadow-sm">
-          <div className="space-y-4">
+        <div className="mx-auto flex max-w-xl flex-col items-center space-y-8 rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-12 text-center text-primary-foreground shadow-2xl shadow-primary/30 ring-1 ring-primary-foreground/20 relative overflow-hidden z-10">
+          {/* Internal Glow */}
+          <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
+          
+          <div className="space-y-4 relative z-10">
             <h2 className="text-5xl font-extrabold tracking-tighter">Buka Kasir</h2>
             <p className="text-lg font-medium leading-relaxed opacity-90">
               Mesin kasir siap digunakan. Silakan masuk untuk mulai melayani pelanggan hari ini.
