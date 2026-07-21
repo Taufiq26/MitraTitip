@@ -36,11 +36,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="relative space-y-8 min-h-[calc(100vh-10rem)]">
-      {/* Ambient Glows */}
-      <div className="pointer-events-none absolute -left-40 -top-40 -z-10 h-[60rem] w-[60rem] rounded-full bg-primary/20 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-20 right-0 -z-10 h-[50rem] w-[50rem] rounded-full bg-primary/10 blur-[120px]" />
-
+    <div className="relative space-y-8">
       <div className="space-y-2 relative z-10">
         <h1 className="text-4xl font-extrabold tracking-tight">
           Selamat datang, {profile.fullName.split(" ")[0]}

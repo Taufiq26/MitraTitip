@@ -268,11 +268,7 @@ export function PosClient({
   }
 
   return (
-    <div className="relative grid h-[calc(100vh-9rem)] min-h-[600px] grid-cols-1 gap-6 lg:grid-cols-12">
-      {/* Ambient Glows */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[60rem] w-[60rem] rounded-full bg-primary/20 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-20 right-0 h-[40rem] w-[40rem] rounded-full bg-primary/10 blur-[100px]" />
-      
+    <div className="relative grid h-[calc(100vh-12rem)] min-h-[600px] grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Left Area: Products & Search */}
       <div className="relative z-10 flex min-h-0 flex-col lg:col-span-7 xl:col-span-8">
         <div className="flex-none flex items-center justify-between pb-6">
