@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -56,14 +57,18 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
     });
   };
 
-  const filteredTransactions = transactions.filter((t) => {
-    if (!search) return true;
-    const lowerSearch = search.toLowerCase();
-    return (
-      t.localId.toLowerCase().includes(lowerSearch) ||
-      (t.cashierName && t.cashierName.toLowerCase().includes(lowerSearch))
-    );
-  });
+  const debouncedSearch = useDebounce(search, 300);
+
+  const filteredTransactions = React.useMemo(() => {
+    return transactions.filter((t) => {
+      if (!debouncedSearch) return true;
+      const lowerSearch = debouncedSearch.toLowerCase();
+      return (
+        t.localId.toLowerCase().includes(lowerSearch) ||
+        (t.cashierName && t.cashierName.toLowerCase().includes(lowerSearch))
+      );
+    });
+  }, [transactions, debouncedSearch]);
 
   return (
     <div className="mt-8 space-y-4">
