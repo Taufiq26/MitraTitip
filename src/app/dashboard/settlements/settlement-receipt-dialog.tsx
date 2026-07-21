@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { getReceiptDetails, type SettlementItemDetail } from "./actions";
+
 import type { Settlement } from "@/lib/types/settlement";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +27,21 @@ export function SettlementReceiptDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [details, setDetails] = useState<SettlementItemDetail[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && settlement) {
+      setLoading(true);
+      getReceiptDetails(settlement.consignorId, settlement.periodStart, settlement.periodEnd)
+        .then(setDetails)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setDetails([]);
+    }
+  }, [open, settlement]);
+
   if (!settlement) return null;
 
   return (
@@ -56,6 +74,23 @@ export function SettlementReceiptDialog({
                 {new Date(settlement.createdAt).toLocaleString("id-ID")}
               </span>
             </div>
+          </div>
+          <div className="border-t border-dashed pt-2">
+            <p className="font-semibold mb-2 text-xs">Rincian Barang Terjual:</p>
+            {loading ? (
+              <p className="text-muted-foreground text-center py-2 animate-pulse text-xs">Memuat rincian...</p>
+            ) : details.length > 0 ? (
+              <ul className="space-y-1">
+                {details.map((d) => (
+                  <li key={d.productId} className="flex justify-between text-xs">
+                    <span className="truncate pr-2">{d.qty}x {d.productName}</span>
+                    <span>{currencyFormatter.format(d.totalSales)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground text-center py-2 text-xs">Tidak ada rincian barang.</p>
+            )}
           </div>
           <div className="border-t border-dashed pt-2">
             <div className="flex justify-between">

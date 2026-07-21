@@ -143,6 +143,20 @@ export function SettlementForm({
               <p className="text-xs text-muted-foreground text-right mt-2">
                 Direalisasi pada: {new Date(settled.createdAt).toLocaleString("id-ID")}
               </p>
+
+              {settled.details && settled.details.length > 0 && (
+                <div className="border-t pt-2 mt-4">
+                  <p className="text-xs font-semibold mb-2">Rincian Barang:</p>
+                  <ul className="space-y-1 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                    {settled.details.map(d => (
+                      <li key={d.productId} className="flex justify-between text-xs">
+                        <span className="truncate pr-2">{d.qty}x {d.productName}</span>
+                        <span className="font-mono text-muted-foreground">{currencyFormatter.format(d.totalSales)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -174,6 +188,21 @@ export function SettlementForm({
                 <span>Sisa dibayarkan ke penitip</span>
                 <span>{currencyFormatter.format(state.unsettledPreview.totalPayout)}</span>
               </div>
+
+              {state.unsettledPreview.details && state.unsettledPreview.details.length > 0 && (
+                <div className="border-t pt-2 mt-4">
+                  <p className="text-xs font-semibold mb-2">Rincian Barang Terjual:</p>
+                  <ul className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                    {state.unsettledPreview.details.map(d => (
+                      <li key={d.productId} className="flex justify-between text-xs">
+                        <span className="truncate pr-2">{d.qty}x {d.productName}</span>
+                        <span className="font-mono text-muted-foreground">{currencyFormatter.format(d.totalSales)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {finalizeError && (
                 <p className="text-sm text-destructive">{finalizeError}</p>
               )}
