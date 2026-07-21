@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -12,25 +13,22 @@ export function DataTableSearch({ placeholder = "Cari..." }: { placeholder?: str
   const defaultQuery = searchParams.get("q") ?? "";
 
   const [query, setQuery] = useState(defaultQuery);
+  const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      const currentQ = params.get("q") ?? "";
-      
-      // Avoid infinite loops by checking if the value actually changed
-      if (query === currentQ) return;
+    const params = new URLSearchParams(searchParams.toString());
+    const currentQ = params.get("q") ?? "";
+    
+    // Avoid infinite loops by checking if the value actually changed
+    if (debouncedQuery === currentQ) return;
 
-      if (query) {
-        params.set("q", query);
-      } else {
-        params.delete("q");
-      }
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, pathname, router, searchParams]);
+    if (debouncedQuery) {
+      params.set("q", debouncedQuery);
+    } else {
+      params.delete("q");
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [debouncedQuery, pathname, router, searchParams]);
 
   return (
     <div className="relative w-full max-w-sm">

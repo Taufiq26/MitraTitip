@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Trash2 } from "lucide-react";
 import type { Product } from "@/lib/types/product";
 import { db } from "@/lib/offline/db";
@@ -96,14 +97,16 @@ export function PosClient({
     };
   }, []);
 
+  const debouncedSearch = useDebounce(search, 300);
+
   const filteredProducts = useMemo(() => {
-    if (!search.trim()) return products.slice(0, 20);
-    const query = search.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return products.slice(0, 20);
+    const query = debouncedSearch.trim().toLowerCase();
     return products.filter(
       (p) =>
         p.name.toLowerCase().includes(query) || p.barcode?.includes(query),
     );
-  }, [products, search]);
+  }, [products, debouncedSearch]);
 
   const total = useMemo(
     () => cart.reduce((sum, item) => sum + item.qty * item.unitPrice, 0),
