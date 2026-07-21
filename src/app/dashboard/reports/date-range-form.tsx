@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export function DateRangeForm({
   periodStart,
@@ -23,27 +22,30 @@ export function DateRangeForm({
         e.preventDefault();
         router.push(`/dashboard/reports?from=${start}&to=${end}`);
       }}
-      className="mb-6 flex flex-wrap items-end gap-3"
+      className="flex flex-wrap items-center gap-3"
     >
-      <div className="space-y-2">
-        <Label htmlFor="from">Dari tanggal</Label>
+      <div className="flex items-center rounded-lg border bg-background px-2 shadow-sm">
         <Input
           id="from"
           type="date"
           value={start}
           onChange={(e) => setStart(e.target.value)}
+          className="h-11 w-36 border-0 bg-transparent px-2 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-sm font-medium"
+          aria-label="Dari tanggal"
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="to">Sampai tanggal</Label>
+        <span className="text-muted-foreground/40 font-medium px-1">&rarr;</span>
         <Input
           id="to"
           type="date"
           value={end}
           onChange={(e) => setEnd(e.target.value)}
+          className="h-11 w-36 border-0 bg-transparent px-2 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-sm font-medium"
+          aria-label="Sampai tanggal"
         />
       </div>
-      <Button type="submit">Terapkan</Button>
+      <Button type="submit" className="h-11 px-5 font-medium rounded-lg">
+        Terapkan
+      </Button>
     </form>
   );
 }

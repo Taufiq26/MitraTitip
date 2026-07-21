@@ -4,25 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { computeSalesReport } from "@/lib/reports/sales-report";
 import { DateRangeForm } from "./date-range-form";
 import { TransactionHistory } from "./transaction-history";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
   maximumFractionDigits: 0,
 });
-
-const PAYMENT_LABEL: Record<string, string> = {
-  cash: "Tunai",
-  qris: "QRIS",
-  transfer: "Transfer Bank",
-};
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -89,79 +76,87 @@ export default async function ReportsPage({
   }));
 
   return (
-    <div>
-      <h1 className="mb-2 text-2xl font-semibold">Laporan</h1>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Periode {periodStart} &ndash; {periodEnd}
-      </p>
-      <DateRangeForm periodStart={periodStart} periodEnd={periodEnd} />
+    <div className="pb-16 max-w-7xl mx-auto space-y-16">
+      {/* Header Section */}
+      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Laporan Penjualan</h1>
+          <p className="text-muted-foreground mt-3 font-medium text-lg">
+            Periode {new Date(periodStart).toLocaleDateString("id-ID", { dateStyle: "long" })} &ndash; {new Date(periodEnd).toLocaleDateString("id-ID", { dateStyle: "long" })}
+          </p>
+        </div>
+        <DateRangeForm periodStart={periodStart} periodEnd={periodEnd} />
+      </header>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Penjualan</CardTitle>
-            <CardDescription>{report.transactionCount} transaksi</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between font-semibold">
-              <span>Total penjualan</span>
-              <span>{currencyFormatter.format(report.totalRevenue)}</span>
+      {/* Ringkasan Keuangan - Breaking the card grid monotony for main numbers */}
+      <section>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12">
+          {/* Penjualan */}
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Total Penjualan</h3>
+            <div className="text-6xl font-bold tracking-tighter text-foreground mb-8">
+              {currencyFormatter.format(report.totalRevenue)}
             </div>
-            {(["cash", "qris", "transfer"] as const).map((method) => (
-              <div key={method} className="flex justify-between text-muted-foreground">
-                <span>{PAYMENT_LABEL[method]}</span>
-                <span>{currencyFormatter.format(report.byPaymentMethod[method])}</span>
+            <div className="grid grid-cols-3 gap-6 border-t border-border pt-6">
+              <div>
+                <div className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wider">Tunai</div>
+                <div className="font-semibold text-base">{currencyFormatter.format(report.byPaymentMethod.cash)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wider">QRIS</div>
+                <div className="font-semibold text-base">{currencyFormatter.format(report.byPaymentMethod.qris)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wider">Transfer</div>
+                <div className="font-semibold text-base">{currencyFormatter.format(report.byPaymentMethod.transfer)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Laba */}
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Laba Bersih</h3>
+            <div className="text-6xl font-bold tracking-tighter text-foreground mb-8">
+              {currencyFormatter.format(report.netProfit)}
+            </div>
+            <div className="grid grid-cols-2 gap-6 border-t border-border pt-6">
+              <div>
+                <div className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wider">Laba Kotor</div>
+                <div className="font-semibold text-base">{currencyFormatter.format(report.grossProfit)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wider">Porsi Titipan</div>
+                <div className="font-semibold text-base text-muted-foreground">-{currencyFormatter.format(report.consignmentPayout)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Produk Terlaris - List view with space rhythm */}
+      <section>
+        <h3 className="text-2xl font-bold tracking-tight mb-8">Produk Terlaris</h3>
+        {report.topProducts.length === 0 ? (
+          <p className="text-muted-foreground text-lg">Belum ada penjualan di periode ini.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {report.topProducts.slice(0, 6).map((product, idx) => (
+              <div key={product.productId} className="flex items-center gap-5 p-5 rounded-2xl border bg-background shadow-sm transition-colors hover:bg-muted/30">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
+                  {idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate text-base mb-1">{product.name}</div>
+                  <div className="text-muted-foreground text-sm font-medium">{product.qtySold} terjual</div>
+                </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Laba</CardTitle>
-            <CardDescription>Harga modal & fee titipan diperhitungkan</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Laba kotor</span>
-              <span>{currencyFormatter.format(report.grossProfit)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Dibayar ke penitip</span>
-              <span>{currencyFormatter.format(report.consignmentPayout)}</span>
-            </div>
-            <div className="flex justify-between border-t pt-2 font-semibold">
-              <span>Laba bersih</span>
-              <span>{currencyFormatter.format(report.netProfit)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Produk Terlaris</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {report.topProducts.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Belum ada penjualan di periode ini.
-              </p>
-            )}
-            <ol className="space-y-1 text-sm">
-              {report.topProducts.map((product, index) => (
-                <li key={product.productId} className="flex justify-between">
-                  <span>
-                    {index + 1}. {product.name}
-                  </span>
-                  <span className="text-muted-foreground">{product.qtySold} terjual</span>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        )}
+      </section>
       
       <TransactionHistory transactions={transactions} />
     </div>
   );
 }
+

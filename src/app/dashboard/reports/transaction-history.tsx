@@ -71,30 +71,33 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
   }, [transactions, debouncedSearch]);
 
   return (
-    <div className="mt-8 space-y-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-lg font-semibold">Riwayat Transaksi</h2>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Riwayat Transaksi</h2>
+          <p className="text-muted-foreground mt-1 text-base">Daftar transaksi pada periode ini.</p>
+        </div>
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Cari ID Transaksi atau kasir..."
-            className="pl-8"
+            className="pl-10 h-11 rounded-lg bg-background shadow-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
       
-      <div className="rounded-md border overflow-hidden">
+      <div className="rounded-xl border bg-background overflow-hidden shadow-sm">
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="bg-muted/30">
+            <TableRow className="hover:bg-transparent">
               <TableHead className="w-12"></TableHead>
-              <TableHead>Waktu</TableHead>
-              <TableHead>Kasir</TableHead>
-              <TableHead>Metode</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="font-semibold text-foreground">Waktu</TableHead>
+              <TableHead className="font-semibold text-foreground">Kasir</TableHead>
+              <TableHead className="font-semibold text-foreground">Metode</TableHead>
+              <TableHead className="text-right font-semibold text-foreground">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
