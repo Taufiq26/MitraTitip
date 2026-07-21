@@ -21,7 +21,7 @@ import {
 
 const initialState: ProductActionState = { error: null };
 
-export function ProductDialog({ product }: { product?: Product }) {
+export function ProductDialog({ product, triggerText, triggerVariant }: { product?: Product; triggerText?: string; triggerVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" }) {
   const [open, setOpen] = useState(false);
   const action = product
     ? updateProduct.bind(null, product.id)
@@ -33,10 +33,10 @@ export function ProductDialog({ product }: { product?: Product }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<Button variant={product ? "outline" : "default"} size="sm" />}
-      >
-        {product ? "Edit" : "Tambah Produk"}
+      <DialogTrigger asChild>
+        <Button variant={triggerVariant || (product ? "outline" : "default")} size="sm">
+          {triggerText || (product ? "Edit" : "Tambah Produk")}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

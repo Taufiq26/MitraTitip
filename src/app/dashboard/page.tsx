@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProductDialog } from "./products/product-dialog";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -91,11 +92,14 @@ export default async function DashboardPage() {
               <CardContent>
                 <ul className="space-y-1 text-sm">
                   {lowStockProducts.map((product) => (
-                    <li key={product.id} className="flex justify-between">
-                      <span>{product.name}</span>
-                      <span className="text-muted-foreground">
-                        sisa {product.stockQty}
-                      </span>
+                    <li key={product.id} className="flex justify-between items-center py-1">
+                      <div>
+                        <span className="block font-medium">{product.name}</span>
+                        <span className="text-muted-foreground text-xs">
+                          Sisa: {product.stockQty} (Batas: {product.lowStockThreshold})
+                        </span>
+                      </div>
+                      <ProductDialog product={product} triggerText="Isi Stok" triggerVariant="secondary" />
                     </li>
                   ))}
                 </ul>

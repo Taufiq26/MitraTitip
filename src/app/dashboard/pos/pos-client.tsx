@@ -51,7 +51,7 @@ export function PosClient({
   initialProducts: Product[];
   cashierName: string;
 }) {
-  const products = initialProducts;
+  const [products, setProducts] = useState(initialProducts);
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
@@ -219,6 +219,27 @@ export function PosClient({
       })),
       createdAt,
     });
+
+    const updatedProducts = products.map((p) => {
+      const cartItem = cart.find((item) => item.productId === p.id);
+      if (cartItem && p.trackStock) {
+        return { ...p, stockQty: p.stockQty - cartItem.qty };
+      }
+      return p;
+    });
+    setProducts(updatedProducts);
+
+    db.cachedProducts.bulkPut(
+      updatedProducts.map((p) => ({
+        id: p.id,
+        name: p.name,
+        barcode: p.barcode,
+        sellPrice: p.sellPrice,
+        trackStock: p.trackStock,
+        stockQty: p.stockQty,
+        isConsignment: p.isConsignment,
+      }))
+    );
 
     await flushPendingTransactions();
     countPendingTransactions().then(setPendingCount);
