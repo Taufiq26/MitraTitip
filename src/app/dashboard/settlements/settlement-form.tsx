@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   previewSettlement,
   finalizeSettlement,
@@ -54,10 +55,12 @@ export function SettlementForm({
   );
   const [finalizeError, setFinalizeError] = useState<string | null>(null);
   const [finalized, setFinalized] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   return (
     <div className="w-full space-y-4">
-      <form action={formAction} className="space-y-4">
+      <form action={formAction} ref={formRef} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="consignorId">Penitip</Label>
           <input type="hidden" name="consignorId" value={consignorId} />
@@ -220,6 +223,8 @@ export function SettlementForm({
                     setFinalizeError(result.error);
                   } else {
                     setFinalized(true);
+                    formRef.current?.requestSubmit();
+                    router.refresh();
                   }
                 }}
               >

@@ -47,9 +47,11 @@ async function getSettlementDetails(
   supabase: any,
   consignorId: string,
   periodStart: string,
-  periodEnd: string
+  periodEnd: string,
+  minTime?: string | null,
+  maxTime?: string | null
 ): Promise<SettlementItemDetail[]> {
-  const { data } = await supabase
+  let query = supabase
     .from("transaction_items")
     .select(`
       qty,
@@ -59,9 +61,21 @@ async function getSettlementDetails(
       transactions!inner ( created_at ),
       consignment_batches!inner ( consignor_id )
     `)
-    .eq("consignment_batches.consignor_id", consignorId)
-    .gte("transactions.created_at", `${periodStart}T00:00:00.000Z`)
-    .lte("transactions.created_at", `${periodEnd}T23:59:59.999Z`);
+    .eq("consignment_batches.consignor_id", consignorId);
+
+  if (minTime) {
+    query = query.gt("transactions.created_at", minTime);
+  } else {
+    query = query.gte("transactions.created_at", `${periodStart}T00:00:00.000Z`);
+  }
+
+  if (maxTime) {
+    query = query.lte("transactions.created_at", maxTime);
+  } else {
+    query = query.lte("transactions.created_at", `${periodEnd}T23:59:59.999Z`);
+  }
+
+  const { data } = await query;
 
   if (!data) return [];
 
@@ -132,14 +146,6 @@ export async function previewSettlement(
     total_payout: number;
   };
 
-  // 1b. Get RAW details for this queried period
-  const rawDetails = await getSettlementDetails(
-    supabase,
-    parsed.data.consignorId,
-    parsed.data.periodStart,
-    parsed.data.periodEnd
-  );
-
   // 2. Get existing settlements in period (overlapping)
   const { data: existing } = await supabase
     .from("settlements")
@@ -149,15 +155,21 @@ export async function previewSettlement(
     .gte("period_end", parsed.data.periodStart)
     .order("created_at", { ascending: true });
 
-  const existingSettlements = await Promise.all((existing ?? []).map(async (s) => {
-    // Fetch details for each existing settlement based on its period
+  const existingSettlements = [];
+  let lastCreatedAt: string | null = null;
+
+  for (const s of (existing ?? [])) {
     const sDetails = await getSettlementDetails(
       supabase,
       parsed.data.consignorId,
       s.period_start,
-      s.period_end
+      s.period_end,
+      lastCreatedAt,
+      s.created_at
     );
-    return {
+    lastCreatedAt = s.created_at;
+    
+    existingSettlements.push({
       id: s.id,
       totalSales: s.total_sales,
       totalFee: s.total_fee,
@@ -166,10 +178,10 @@ export async function previewSettlement(
       periodStart: s.period_start,
       periodEnd: s.period_end,
       details: sDetails,
-    };
-  }));
+    });
+  }
 
-  // 3. Subtract existing from total to find unsettled
+  // 3. Calculate unsettled totals
   const settledSales = existingSettlements.reduce((sum, s) => sum + s.totalSales, 0);
   const settledFee = existingSettlements.reduce((sum, s) => sum + s.totalFee, 0);
   const settledPayout = existingSettlements.reduce((sum, s) => sum + s.totalPayout, 0);
@@ -178,29 +190,17 @@ export async function previewSettlement(
   const unsettledFee = Math.max(0, row.total_fee - settledFee);
   const unsettledPayout = Math.max(0, row.total_payout - settledPayout);
 
-  // 3b. Subtract existing details from raw details to find unsettled details
-  const unsettledDetailsMap = new Map<string, SettlementItemDetail>();
-  for (const item of rawDetails) {
-    unsettledDetailsMap.set(item.productId, { ...item }); // clone
-  }
-
-  for (const s of existingSettlements) {
-    for (const d of s.details ?? []) {
-      if (unsettledDetailsMap.has(d.productId)) {
-        const target = unsettledDetailsMap.get(d.productId)!;
-        target.qty = Math.max(0, target.qty - d.qty);
-        target.totalSales = Math.max(0, target.totalSales - d.totalSales);
-        target.totalFee = Math.max(0, target.totalFee - d.totalFee);
-        target.totalPayout = Math.max(0, target.totalPayout - d.totalPayout);
-      }
-    }
-  }
-
-  // Filter out products that have 0 unsettled qty
-  const unsettledDetails = Array.from(unsettledDetailsMap.values()).filter(d => d.qty > 0);
-
   let unsettledPreview = null;
   if (unsettledSales > 0) {
+    const unsettledDetails = await getSettlementDetails(
+      supabase,
+      parsed.data.consignorId,
+      parsed.data.periodStart,
+      parsed.data.periodEnd,
+      lastCreatedAt,
+      null
+    );
+
     unsettledPreview = {
       totalSales: unsettledSales,
       totalFee: unsettledFee,
@@ -244,8 +244,24 @@ export async function finalizeSettlement(
 export async function getReceiptDetails(
   consignorId: string,
   periodStart: string,
-  periodEnd: string
+  periodEnd: string,
+  settlementCreatedAt: string
 ): Promise<SettlementItemDetail[]> {
   const supabase = await createClient();
-  return getSettlementDetails(supabase, consignorId, periodStart, periodEnd);
+  
+  // Find the previous settlement's created_at to use as minTime
+  const { data } = await supabase
+    .from("settlements")
+    .select("created_at")
+    .eq("consignor_id", consignorId)
+    .lte("period_start", periodEnd)
+    .gte("period_end", periodStart)
+    .lt("created_at", settlementCreatedAt)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const minTime = data ? data.created_at : null;
+  
+  return getSettlementDetails(supabase, consignorId, periodStart, periodEnd, minTime, settlementCreatedAt);
 }

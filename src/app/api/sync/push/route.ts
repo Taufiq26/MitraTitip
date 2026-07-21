@@ -103,39 +103,73 @@ export async function POST(request: Request) {
 
     for (const item of tx.items) {
       const product = productById.get(item.product_id);
-      let consignmentBatchId: string | null = null;
-      let feePercentSnapshot: number | null = null;
-
       if (product?.is_consignment) {
-        const { data: batch } = await supabase
+        const { data: batches } = await supabase
           .from("consignment_batches")
-          .select("id, fee_percent")
+          .select("id, fee_percent, qty_received, qty_sold, qty_returned")
           .eq("product_id", item.product_id)
           .eq("status", "active")
-          .order("date_received", { ascending: true })
-          .limit(1)
-          .maybeSingle();
+          .order("date_received", { ascending: true });
 
-        if (batch) {
-          consignmentBatchId = batch.id;
-          feePercentSnapshot = batch.fee_percent;
-          await supabase.rpc("increment_batch_qty_sold", {
-            p_batch_id: batch.id,
-            p_qty: item.qty,
+        let remainingQty = item.qty;
+
+        if (batches) {
+          for (const batch of batches) {
+            if (remainingQty <= 0) break;
+            const batchRemaining = batch.qty_received - batch.qty_sold - batch.qty_returned;
+            if (batchRemaining <= 0) continue;
+
+            const qtyToDeduct = Math.min(remainingQty, batchRemaining);
+            const { error: rpcError } = await supabase.rpc("increment_batch_qty_sold", {
+              p_batch_id: batch.id,
+              p_qty: qtyToDeduct,
+            });
+            
+            if (rpcError) {
+              console.error("Failed to increment batch qty:", rpcError);
+              continue; // If it fails, try the next batch or fallback
+            }
+
+            await supabase.from("transaction_items").insert({
+              transaction_id: insertedTx.id,
+              product_id: item.product_id,
+              consignment_batch_id: batch.id,
+              qty: qtyToDeduct,
+              unit_price: item.unit_price,
+              cost_price_snapshot: product?.cost_price ?? 0,
+              fee_percent_snapshot: batch.fee_percent,
+              subtotal: qtyToDeduct * item.unit_price,
+            });
+
+            remainingQty -= qtyToDeduct;
+          }
+        }
+
+        // If there's still quantity left (e.g. oversold), record it without a batch
+        if (remainingQty > 0) {
+          await supabase.from("transaction_items").insert({
+            transaction_id: insertedTx.id,
+            product_id: item.product_id,
+            consignment_batch_id: null,
+            qty: remainingQty,
+            unit_price: item.unit_price,
+            cost_price_snapshot: product?.cost_price ?? 0,
+            fee_percent_snapshot: null,
+            subtotal: remainingQty * item.unit_price,
           });
         }
+      } else {
+        await supabase.from("transaction_items").insert({
+          transaction_id: insertedTx.id,
+          product_id: item.product_id,
+          consignment_batch_id: null,
+          qty: item.qty,
+          unit_price: item.unit_price,
+          cost_price_snapshot: product?.cost_price ?? 0,
+          fee_percent_snapshot: null,
+          subtotal: item.qty * item.unit_price,
+        });
       }
-
-      await supabase.from("transaction_items").insert({
-        transaction_id: insertedTx.id,
-        product_id: item.product_id,
-        consignment_batch_id: consignmentBatchId,
-        qty: item.qty,
-        unit_price: item.unit_price,
-        cost_price_snapshot: product?.cost_price ?? 0,
-        fee_percent_snapshot: feePercentSnapshot,
-        subtotal: item.qty * item.unit_price,
-      });
 
       if (product?.track_stock) {
         await supabase.rpc("decrement_product_stock", {

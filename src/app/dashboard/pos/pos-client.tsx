@@ -114,9 +114,18 @@ export function PosClient({
     paymentMethod === "cash" ? Math.max(0, cashReceivedNumber - total) : null;
 
   function addToCart(product: Product) {
+    if (product.trackStock && product.stockQty <= 0) {
+      setSubmitError(`Stok ${product.name} habis.`);
+      return;
+    }
+    
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === product.id);
       if (existing) {
+        if (product.trackStock && existing.qty + 1 > product.stockQty) {
+          setSubmitError(`Stok ${product.name} hanya tersisa ${product.stockQty}.`);
+          return prev;
+        }
         return prev.map((item) =>
           item.productId === product.id ? { ...item, qty: item.qty + 1 } : item,
         );
@@ -149,6 +158,11 @@ export function PosClient({
       setCart((prev) => prev.filter((item) => item.productId !== productId));
       return;
     }
+    const product = products.find(p => p.id === productId);
+    if (product?.trackStock && qty > product.stockQty) {
+      setSubmitError(`Stok ${product.name} hanya tersisa ${product.stockQty}.`);
+      qty = product.stockQty;
+    }
     setCart((prev) =>
       prev.map((item) => (item.productId === productId ? { ...item, qty } : item)),
     );
@@ -168,6 +182,15 @@ export function PosClient({
 
   async function handleSubmit() {
     if (cart.length === 0) return;
+    
+    for (const item of cart) {
+      const product = products.find((p) => p.id === item.productId);
+      if (product?.trackStock && item.qty > product.stockQty) {
+        setSubmitError(`Tidak dapat menyelesaikan transaksi: Stok ${product.name} hanya tersisa ${product.stockQty}.`);
+        return;
+      }
+    }
+
     if (paymentMethod === "cash" && cashReceivedNumber < total) {
       setSubmitError("Uang tunai yang diterima kurang dari total belanja");
       return;
@@ -251,10 +274,15 @@ export function PosClient({
               className="flex flex-col rounded-lg border p-3 text-left text-sm hover:bg-accent"
             >
               <div className="flex w-full items-start justify-between gap-1">
-                <p className="font-medium">{product.name}</p>
-                {product.isConsignment && (
-                  <Badge variant="secondary" className="px-1.5 py-0 text-[10px] leading-tight shrink-0 h-4 rounded-sm">Titipan</Badge>
-                )}
+                <p className="font-medium pr-2">{product.name}</p>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  {product.isConsignment && (
+                    <Badge variant="secondary" className="px-1.5 py-0 text-[10px] leading-tight h-4 rounded-sm">Titipan</Badge>
+                  )}
+                  {product.trackStock && (
+                    <Badge variant="outline" className="px-1.5 py-0 text-[10px] leading-tight h-4 rounded-sm font-medium">Sisa: {product.stockQty}</Badge>
+                  )}
+                </div>
               </div>
               <p className="text-muted-foreground mt-1">
                 {currencyFormatter.format(product.sellPrice)}
