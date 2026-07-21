@@ -248,10 +248,15 @@ export function PosClient({
               key={product.id}
               type="button"
               onClick={() => addToCart(product)}
-              className="rounded-lg border p-3 text-left text-sm hover:bg-accent"
+              className="flex flex-col rounded-lg border p-3 text-left text-sm hover:bg-accent"
             >
-              <p className="font-medium">{product.name}</p>
-              <p className="text-muted-foreground">
+              <div className="flex w-full items-start justify-between gap-1">
+                <p className="font-medium">{product.name}</p>
+                {product.isConsignment && (
+                  <Badge variant="secondary" className="px-1.5 py-0 text-[10px] leading-tight shrink-0 h-4 rounded-sm">Titipan</Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground mt-1">
                 {currencyFormatter.format(product.sellPrice)}
               </p>
             </button>

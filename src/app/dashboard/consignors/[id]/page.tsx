@@ -11,6 +11,8 @@ import { BatchDialog } from "./batch-dialog";
 import { ReturnBatchButton } from "./return-batch-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTableSearch } from "@/components/ui/data-table-search";
+import { Suspense } from "react";
 import {
   Table,
   TableBody,
@@ -22,10 +24,13 @@ import {
 
 export default async function ConsignorDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
   const { id } = await params;
+  const { q } = await searchParams;
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
@@ -44,40 +49,52 @@ export default async function ConsignorDetailPage({
   }
   const consignor = mapConsignorRow(consignorRow);
 
-  const { data: batchRows } = await supabase
+  let batchQuery = supabase
     .from("consignment_batches")
-    .select("*, products(name)")
+    .select("*, products!inner(name)")
     .eq("consignor_id", id)
-    .order("date_received", { ascending: false })
-    .returns<ConsignmentBatchRow[]>();
+    .order("date_received", { ascending: false });
+
+  if (q) {
+    batchQuery = batchQuery.ilike("products.name", `%${q}%`);
+  }
+
+  const { data: batchRows } = await batchQuery.returns<ConsignmentBatchRow[]>();
 
   const batches = (batchRows ?? []).map(mapConsignmentBatchRow);
 
   return (
-    <div>
+    <div className="space-y-4">
       <Link
         href="/dashboard/consignors"
-        className="text-sm text-muted-foreground hover:underline"
+        className="text-sm text-muted-foreground hover:underline inline-block mb-2"
       >
         &larr; Kembali ke daftar penitip
       </Link>
-      <div className="mt-2 mb-4 flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{consignor.name}</h1>
           {consignor.phone && (
             <p className="text-sm text-muted-foreground">{consignor.phone}</p>
           )}
         </div>
-        <div className="flex gap-2">
-          <Link href={`/dashboard/settlements?consignorId=${consignor.id}`}>
-            <Button variant="outline" size="sm">
-              Rekap Settlement
-            </Button>
-          </Link>
-          <BatchDialog consignorId={consignor.id} />
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <Suspense fallback={<div className="w-full max-w-sm h-9 bg-muted rounded-md animate-pulse" />}>
+            <DataTableSearch placeholder="Cari nama barang..." />
+          </Suspense>
+          <div className="flex gap-2">
+            <Link href={`/dashboard/settlements?consignorId=${consignor.id}`}>
+              <Button variant="outline" size="sm" className="h-9">
+                Rekap Settlement
+              </Button>
+            </Link>
+            <BatchDialog consignorId={consignor.id} />
+          </div>
         </div>
       </div>
-      <Table>
+      <div className="rounded-md border">
+        <Table>
+
         <TableHeader>
           <TableRow>
             <TableHead>Barang</TableHead>
@@ -124,6 +141,7 @@ export default async function ConsignorDetailPage({
           })}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

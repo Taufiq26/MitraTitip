@@ -119,7 +119,8 @@ export async function createConsignmentBatch(
       name: parsed.data.productName,
       sell_price: parsed.data.sellPrice,
       cost_price: 0,
-      track_stock: false,
+      track_stock: true,
+      stock_qty: parsed.data.qtyReceived,
       is_consignment: true,
     })
     .select("id")
@@ -158,7 +159,7 @@ export async function returnConsignmentBatch(
   const supabase = await createClient();
   const { data: batch } = await supabase
     .from("consignment_batches")
-    .select("qty_received, qty_sold, qty_returned")
+    .select("product_id, qty_received, qty_sold, qty_returned")
     .eq("id", batchId)
     .eq("tenant_id", profile.tenantId)
     .single();
@@ -176,6 +177,12 @@ export async function returnConsignmentBatch(
     })
     .eq("id", batchId)
     .eq("tenant_id", profile.tenantId);
+
+  // Decrement product stock via RPC
+  await supabase.rpc("decrement_product_stock", {
+    p_product_id: batch.product_id,
+    p_qty: remaining,
+  });
 
   revalidatePath(`/dashboard/consignors/${consignorId}`);
 }

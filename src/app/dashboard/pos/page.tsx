@@ -9,6 +9,7 @@ export default async function PosPage() {
   const { data } = await supabase
     .from("products")
     .select("*")
+    .or("is_consignment.eq.false,and(is_consignment.eq.true,stock_qty.gt.0)")
     .order("name")
     .returns<ProductRow[]>();
 

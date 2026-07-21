@@ -9,14 +9,14 @@ import { SettlementHistory } from "./settlement-history";
 export default async function SettlementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ consignorId?: string }>;
+  searchParams: Promise<{ consignorId?: string; q?: string }>;
 }) {
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
-  const { consignorId } = await searchParams;
+  const { consignorId, q } = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase
     .from("consignors")
@@ -26,11 +26,16 @@ export default async function SettlementsPage({
 
   const consignors = (data ?? []).map(mapConsignorRow);
 
-  const { data: settlementRows } = await supabase
+  let settlementQuery = supabase
     .from("settlements")
-    .select("*, consignors(name)")
-    .order("created_at", { ascending: false })
-    .returns<SettlementRow[]>();
+    .select("*, consignors!inner(name)")
+    .order("created_at", { ascending: false });
+
+  if (q) {
+    settlementQuery = settlementQuery.ilike("consignors.name", `%${q}%`);
+  }
+
+  const { data: settlementRows } = await settlementQuery.returns<SettlementRow[]>();
 
   const settlements = (settlementRows ?? []).map(mapSettlementRow);
 

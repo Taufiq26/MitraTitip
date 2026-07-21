@@ -5,6 +5,8 @@ import { mapProductRow, type ProductRow } from "@/lib/types/product";
 import { ProductDialog } from "./product-dialog";
 import { DeleteProductButton } from "./delete-product-button";
 import { Badge } from "@/components/ui/badge";
+import { DataTableSearch } from "@/components/ui/data-table-search";
+import { Suspense } from "react";
 import {
   Table,
   TableBody,
@@ -20,28 +22,45 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("products")
     .select("*")
-    .order("name")
-    .returns<ProductRow[]>();
+    .or("is_consignment.eq.false,and(is_consignment.eq.true,stock_qty.gt.0)")
+    .order("name");
+  
+  if (q) {
+    query = query.ilike("name", `%${q}%`);
+  }
+
+  const { data } = await query.returns<ProductRow[]>();
 
   const products = (data ?? []).map(mapProductRow);
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl font-semibold">Barang</h1>
-        <ProductDialog />
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <Suspense fallback={<div className="w-full max-w-sm h-9 bg-muted rounded-md animate-pulse" />}>
+            <DataTableSearch placeholder="Cari barang..." />
+          </Suspense>
+          <ProductDialog />
+        </div>
       </div>
-      <Table>
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nama</TableHead>
@@ -68,7 +87,14 @@ export default async function ProductsPage() {
 
             return (
               <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {product.name}
+                    {product.isConsignment && (
+                      <Badge variant="secondary" className="text-xs">Titipan</Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>{product.barcode ?? "-"}</TableCell>
                 <TableCell>{currencyFormatter.format(product.costPrice)}</TableCell>
                 <TableCell>{currencyFormatter.format(product.sellPrice)}</TableCell>
@@ -93,6 +119,7 @@ export default async function ProductsPage() {
           })}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

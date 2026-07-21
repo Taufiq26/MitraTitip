@@ -6,6 +6,9 @@ import { mapConsignorRow, type ConsignorRow } from "@/lib/types/consignor";
 import { ConsignorDialog } from "./consignor-dialog";
 import { DeleteConsignorButton } from "./delete-consignor-button";
 import { BatchDialog } from "./[id]/batch-dialog";
+import { DataTableSearch } from "@/components/ui/data-table-search";
+import { Suspense } from "react";
+import { ClickableTableRow } from "@/components/ui/clickable-table-row";
 import {
   Table,
   TableBody,
@@ -15,28 +18,41 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default async function ConsignorsPage() {
+export default async function ConsignorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("consignors")
-    .select("*")
-    .order("name")
-    .returns<ConsignorRow[]>();
+  let query = supabase.from("consignors").select("*").order("name");
+
+  if (q) {
+    query = query.ilike("name", `%${q}%`);
+  }
+
+  const { data } = await query.returns<ConsignorRow[]>();
 
   const consignors = (data ?? []).map(mapConsignorRow);
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl font-semibold">Penitip</h1>
-        <ConsignorDialog />
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <Suspense fallback={<div className="w-full max-w-sm h-9 bg-muted rounded-md animate-pulse" />}>
+            <DataTableSearch placeholder="Cari penitip..." />
+          </Suspense>
+          <ConsignorDialog />
+        </div>
       </div>
-      <Table>
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Nama</TableHead>
@@ -53,14 +69,9 @@ export default async function ConsignorsPage() {
             </TableRow>
           )}
           {consignors.map((consignor) => (
-            <TableRow key={consignor.id}>
+            <ClickableTableRow key={consignor.id} href={`/dashboard/consignors/${consignor.id}`}>
               <TableCell className="font-medium">
-                <Link
-                  href={`/dashboard/consignors/${consignor.id}`}
-                  className="hover:underline"
-                >
-                  {consignor.name}
-                </Link>
+                {consignor.name}
               </TableCell>
               <TableCell>{consignor.phone ?? "-"}</TableCell>
               <TableCell className="text-right">
@@ -70,10 +81,11 @@ export default async function ConsignorsPage() {
                   <DeleteConsignorButton consignorId={consignor.id} />
                 </div>
               </TableCell>
-            </TableRow>
+            </ClickableTableRow>
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import type { Settlement } from "@/lib/types/settlement";
 import { SettlementReceiptDialog } from "./settlement-receipt-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTableSearch } from "@/components/ui/data-table-search";
+import { Suspense } from "react";
 import {
   Table,
   TableBody,
@@ -25,9 +27,15 @@ export function SettlementHistory({ settlements }: { settlements: Settlement[] }
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mt-8">
-      <h2 className="mb-3 text-lg font-semibold">Riwayat Settlement</h2>
-      <Table>
+    <div className="mt-8 space-y-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <h2 className="text-lg font-semibold">Riwayat Settlement</h2>
+        <Suspense fallback={<div className="w-full max-w-sm h-9 bg-muted rounded-md animate-pulse" />}>
+          <DataTableSearch placeholder="Cari penitip..." />
+        </Suspense>
+      </div>
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Penitip</TableHead>
@@ -71,6 +79,7 @@ export function SettlementHistory({ settlements }: { settlements: Settlement[] }
           ))}
         </TableBody>
       </Table>
+      </div>
       <SettlementReceiptDialog settlement={selected} open={open} onOpenChange={setOpen} />
     </div>
   );
