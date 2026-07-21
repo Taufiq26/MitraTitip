@@ -122,7 +122,7 @@ export function PosClient({
       setSubmitError(`Stok ${product.name} habis.`);
       return;
     }
-    
+
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === product.id);
       if (existing) {
@@ -186,7 +186,7 @@ export function PosClient({
 
   async function handleSubmit() {
     if (cart.length === 0) return;
-    
+
     for (const item of cart) {
       const product = products.find((p) => p.id === item.productId);
       if (product?.trackStock && item.qty > product.stockQty) {
@@ -268,80 +268,99 @@ export function PosClient({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-      <div className="lg:col-span-3">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Kasir</h1>
+    <div className="relative grid h-[calc(100vh-9rem)] min-h-[600px] grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Ambient Glows */}
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[60rem] w-[60rem] rounded-full bg-primary/20 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-20 right-0 h-[40rem] w-[40rem] rounded-full bg-primary/10 blur-[100px]" />
+      
+      {/* Left Area: Products & Search */}
+      <div className="relative z-10 flex min-h-0 flex-col lg:col-span-7 xl:col-span-8">
+        <div className="flex-none flex items-center justify-between pb-6">
+          <h1 className="text-3xl font-extrabold tracking-tight">Kasir</h1>
           {pendingCount > 0 && (
-            <Badge variant="secondary">
-              {pendingCount} transaksi menunggu sinkron
+            <Badge variant="secondary" className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {pendingCount} Menunggu Sinkron
             </Badge>
           )}
         </div>
-        <div className="mb-4 flex gap-2">
+
+        <div className="flex-none flex gap-3 pb-6">
           <Input
             placeholder="Cari nama barang atau scan barcode..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleSearchKeyDown}
             autoFocus
+            className="h-14 rounded-2xl border-none bg-background/50 px-6 text-lg shadow-sm backdrop-blur-sm focus-visible:ring-primary/50"
           />
-          <Button variant="outline" onClick={() => setCameraOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setCameraOpen(true)}
+            className="h-14 rounded-2xl border-none bg-background/50 px-6 text-sm font-bold uppercase tracking-wider shadow-sm hover:bg-background"
+          >
             Scan Kamera
           </Button>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {filteredProducts.map((product) => (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() => addToCart(product)}
-              className="group flex flex-col rounded-lg bg-card p-3 text-left text-sm shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] ring-1 ring-foreground/5 transition-all duration-150 hover:ring-primary/50 hover:shadow-md"
-            >
-              <div className="flex w-full items-start justify-between gap-1">
-                <p className="font-medium pr-2">{product.name}</p>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  {product.isConsignment && (
-                    <Badge variant="secondary" className="px-1.5 py-0 text-[10px] leading-tight h-4 rounded-sm">Titipan</Badge>
-                  )}
-                  {product.trackStock && (
-                    <Badge variant="outline" className="px-1.5 py-0 text-[10px] leading-tight h-4 rounded-sm font-medium">Sisa: {product.stockQty}</Badge>
-                  )}
+
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2 pb-12 pt-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+            {filteredProducts.map((product) => (
+              <button
+                key={product.id}
+                type="button"
+                onClick={() => addToCart(product)}
+                className="group flex h-full min-h-[8.5rem] flex-col justify-between rounded-3xl bg-background p-5 text-left shadow-sm ring-1 ring-foreground/5 transition-all duration-200 hover:-translate-y-1 hover:bg-primary/[0.02] hover:shadow-md hover:ring-primary/30 active:translate-y-0 active:scale-95"
+              >
+                <div className="flex w-full items-start justify-between gap-2">
+                  <p className="line-clamp-3 pr-1 text-[15px] font-bold leading-snug tracking-tight text-foreground/90 group-hover:text-foreground">{product.name}</p>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5 mt-0.5">
+                    {product.isConsignment && (
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary-foreground">Titipan</span>
+                    )}
+                    {product.trackStock && (
+                      <span className="rounded-full border border-foreground/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sisa: {product.stockQty}</span>
+                    )}
+                  </div>
                 </div>
+                <p className="mt-2 text-xl font-black tracking-tighter text-foreground">
+                  {currencyFormatter.format(product.sellPrice)}
+                </p>
+              </button>
+            ))}
+            {filteredProducts.length === 0 && (
+              <div className="col-span-full flex h-32 items-center justify-center rounded-3xl border-2 border-dashed border-muted">
+                <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  Barang tidak ditemukan
+                </p>
               </div>
-              <p className="text-muted-foreground mt-1">
-                {currencyFormatter.format(product.sellPrice)}
-              </p>
-            </button>
-          ))}
-          {filteredProducts.length === 0 && (
-            <p className="col-span-full text-sm text-muted-foreground">
-              Barang tidak ditemukan.
-            </p>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Keranjang</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* Right Area: Cart Bento Box */}
+      <div className="min-h-0 lg:col-span-5 xl:col-span-4 relative z-10">
+        <div className="flex h-full flex-col rounded-3xl bg-gradient-to-b from-background to-primary/[0.05] p-6 shadow-sm ring-1 ring-foreground/5">
+          <div className="mb-6 flex-none">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Rincian Belanja</h2>
+          </div>
+
+          <div className="flex-1 space-y-4 overflow-y-auto pr-2">
             {cart.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Belum ada barang di keranjang.
-              </p>
+              <div className="flex h-full flex-col items-center justify-center text-center opacity-60">
+                <p className="text-lg font-bold tracking-tight text-muted-foreground">Keranjang kosong</p>
+                <p className="mt-1 text-sm font-medium">Silakan pilih atau scan barang.</p>
+              </div>
             )}
             {cart.map((item) => (
-              <div key={item.productId} className="flex items-center justify-between gap-2 text-sm">
-                <div className="flex-1">
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-muted-foreground">
-                    {currencyFormatter.format(item.unitPrice)}
+              <div key={item.productId} className="flex items-center justify-between gap-3 rounded-2xl bg-muted/30 p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">{item.name}</p>
+                  <p className="mt-0.5 text-xs font-medium text-muted-foreground">
+                    {currencyFormatter.format(item.unitPrice)} &times; {item.qty}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <Input
                     type="number"
                     min={0}
@@ -349,12 +368,12 @@ export function PosClient({
                     onChange={(e) =>
                       updateQty(item.productId, Number(e.target.value))
                     }
-                    className="w-16 h-9"
+                    className="h-10 w-16 rounded-xl border-none bg-background text-center font-bold shadow-sm focus-visible:ring-primary/50"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                    className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10"
                     onClick={() => updateQty(item.productId, 0)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -362,66 +381,71 @@ export function PosClient({
                 </div>
               </div>
             ))}
+          </div>
 
-            {cart.length > 0 && (
-              <>
-                <div className="flex justify-between border-t pt-3 text-base font-semibold">
-                  <span>Total</span>
-                  <span>{currencyFormatter.format(total)}</span>
-                </div>
+          {cart.length > 0 && (
+            <div className="mt-6 space-y-6 border-t border-dashed border-foreground/10 pt-6">
+              <div className="flex items-end justify-between">
+                <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Total Tagihan</span>
+                <span className="text-4xl font-black tracking-tighter text-foreground">{currencyFormatter.format(total)}</span>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="paymentMethod">Metode pembayaran</Label>
-                  <Select
-                    value={paymentMethod}
-                    onValueChange={(value) =>
-                      setPaymentMethod((value as PaymentMethod) ?? "cash")
-                    }
-                  >
-                    <SelectTrigger id="paymentMethod" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">Tunai</SelectItem>
-                      <SelectItem value="qris">QRIS</SelectItem>
-                      <SelectItem value="transfer">Transfer Bank</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {paymentMethod === "cash" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="cashReceived">Uang diterima</Label>
-                    <Input
-                      id="cashReceived"
-                      type="number"
-                      min={0}
-                      value={cashReceived}
-                      onChange={(e) => setCashReceived(e.target.value)}
-                    />
-                    {changeAmount !== null && (
-                      <p className="text-sm text-muted-foreground">
-                        Kembalian: {currencyFormatter.format(changeAmount)}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {submitError && (
-                  <p className="text-sm text-destructive">{submitError}</p>
-                )}
-
-                <Button
-                  className="w-full"
-                  disabled={isSubmitting}
-                  onClick={handleSubmit}
+              <div className="space-y-3">
+                <Label htmlFor="paymentMethod" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Metode Pembayaran</Label>
+                <Select
+                  value={paymentMethod}
+                  onValueChange={(value) =>
+                    setPaymentMethod((value as PaymentMethod) ?? "cash")
+                  }
                 >
-                  {isSubmitting ? "Memproses..." : "Selesaikan Transaksi"}
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  <SelectTrigger id="paymentMethod" className="h-12 w-full rounded-xl border-none bg-muted/30 font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="cash" className="font-bold">Tunai (Cash)</SelectItem>
+                    <SelectItem value="qris" className="font-bold">QRIS</SelectItem>
+                    <SelectItem value="transfer" className="font-bold">Transfer Bank</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {paymentMethod === "cash" && (
+                <div className="space-y-3">
+                  <Label htmlFor="cashReceived" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Uang Diterima</Label>
+                  <Input
+                    id="cashReceived"
+                    type="number"
+                    min={0}
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    className="h-14 rounded-xl border-none bg-muted/30 text-lg font-black placeholder:font-medium placeholder:text-muted-foreground/50 focus-visible:ring-primary/50"
+                    placeholder="Contoh: 50000"
+                  />
+                  {changeAmount !== null && (
+                    <div className="flex items-center justify-between rounded-xl bg-primary/10 p-3">
+                      <span className="text-xs font-bold uppercase tracking-widest text-primary">Kembalian</span>
+                      <span className="text-lg font-black text-primary">{currencyFormatter.format(changeAmount)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {submitError && (
+                <div className="rounded-xl bg-destructive/10 p-3">
+                  <p className="text-center text-xs font-bold text-destructive">{submitError}</p>
+                </div>
+              )}
+
+              <Button
+                className="h-16 w-full rounded-2xl text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Memproses..." : "Selesaikan"}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <BarcodeCameraDialog
