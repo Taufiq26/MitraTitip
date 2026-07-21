@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { computeSalesReport } from "@/lib/reports/sales-report";
 import { DateRangeForm } from "./date-range-form";
+import { TransactionHistory } from "./transaction-history";
 import {
   Card,
   CardContent,
@@ -48,6 +49,44 @@ export default async function ReportsPage({
 
   const supabase = await createClient();
   const report = await computeSalesReport(supabase, periodStart, periodEnd);
+
+  const { data: transactionsData } = await supabase
+    .from("transactions")
+    .select(`
+      id,
+      local_id,
+      total_amount,
+      payment_method,
+      created_at,
+      profiles ( full_name ),
+      transaction_items (
+        product_id,
+        qty,
+        subtotal,
+        products ( name )
+      )
+    `)
+    .gte("created_at", `${periodStart}T00:00:00.000Z`)
+    .lte("created_at", `${periodEnd}T23:59:59.999Z`)
+    .order("created_at", { ascending: false });
+
+  const transactions = (transactionsData ?? []).map((t) => ({
+    id: t.id,
+    localId: t.local_id,
+    totalAmount: t.total_amount,
+    paymentMethod: t.payment_method,
+    createdAt: t.created_at,
+    cashierName: Array.isArray(t.profiles) ? t.profiles[0]?.full_name : (t.profiles as { full_name: string } | null)?.full_name,
+    items: (t.transaction_items ?? []).map((ti: unknown) => {
+      const item = ti as { product_id: string; qty: number; subtotal: number; products: { name: string } | { name: string }[] | null };
+      return {
+        productId: item.product_id,
+        productName: Array.isArray(item.products) ? item.products[0]?.name : item.products?.name,
+        qty: item.qty,
+        subtotal: item.subtotal,
+      };
+    })
+  }));
 
   return (
     <div>
@@ -121,6 +160,8 @@ export default async function ReportsPage({
           </CardContent>
         </Card>
       </div>
+      
+      <TransactionHistory transactions={transactions} />
     </div>
   );
 }

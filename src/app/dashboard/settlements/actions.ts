@@ -43,6 +43,7 @@ export type SettlementPreviewState = {
 };
 
 async function getSettlementDetails(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   consignorId: string,
   periodStart: string,

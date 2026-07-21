@@ -32,6 +32,7 @@ export function SettlementReceiptDialog({
 
   useEffect(() => {
     if (open && settlement) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true);
       getReceiptDetails(settlement.consignorId, settlement.periodStart, settlement.periodEnd)
         .then(setDetails)
