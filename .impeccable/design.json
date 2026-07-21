@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-21T03:52:00Z",
+  "title": "Design System: MitraTitip",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Pastel Teal", "canonical": "oklch(0.85 0.08 180)", "tonalRamp": ["oklch(0.3 0.08 180)", "oklch(0.4 0.08 180)", "oklch(0.5 0.08 180)", "oklch(0.6 0.08 180)", "oklch(0.7 0.08 180)", "oklch(0.8 0.08 180)", "oklch(0.85 0.08 180)", "oklch(0.95 0.04 180)"] },
+      "neutral-bg": { "role": "neutral", "displayName": "Off-White Background", "canonical": "oklch(0.985 0 0)", "tonalRamp": [] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Judul halaman dan section utama." },
+      "body": { "displayName": "Body", "purpose": "Teks paragraf dan deskripsi normal." }
+    },
+    "shadows": [
+      { "name": "Ambient Low", "value": "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)", "purpose": "Bayangan standar untuk kartu komponen." }
+    ],
+    "motion": [
+      { "name": "Instant Feedback", "value": "cubic-bezier(0.4, 0, 0.2, 1) 150ms", "purpose": "Transisi sangat cepat untuk state interaktif (hover, focus)." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tombol utama yang menggunakan warna pastel namun tetap high-contrast.",
+      "html": "<button class=\"ds-btn-primary\">SIMPAN TRANSAKSI</button>",
+      "css": ".ds-btn-primary { background: oklch(0.85 0.08 180); color: oklch(0.14 0.02 180); padding: 8px 16px; border-radius: 10px; font-family: system-ui, sans-serif; font-weight: 500; font-size: 14px; border: none; transition: opacity 150ms ease; cursor: pointer; } .ds-btn-primary:hover { opacity: 0.8; } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.85 0.08 180); outline-offset: 2px; }"
+    },
+    {
+      "name": "Base Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Kartu dengan bayangan halus untuk memisahkan konten dari background.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Informasi Toko</h3><p class=\"ds-card-text\">Data profil dan laporan.</p></div>",
+      "css": ".ds-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); font-family: system-ui, sans-serif; } .ds-card-title { margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: oklch(0.145 0 0); } .ds-card-text { margin: 0; font-size: 14px; color: oklch(0.4 0 0); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Asisten Toko yang Ramah & Rapi",
+    "overview": "Sistem desain ini merangkul estetika yang bersahabat (friendly) dan bersih tanpa mengorbankan sedikit pun kecepatan performa dan kemudahan penggunaan. Berbeda dengan aplikasi korporat yang kaku, MitraTitip terasa ringan berkat sentuhan warna pastel yang menenangkan. Antarmuka dirancang seringan mungkin agar pengguna awam (pemilik toko/kasir) merasa dibantu, bukan diintimidasi. Tidak ada animasi berat atau ornamen dekoratif yang memperlambat transisi antar halaman.",
+    "keyCharacteristics": [
+      "Ramah dan dapat diakses (accessible)",
+      "Cepat, ringan, dan fungsional",
+      "Bebas dari dekorasi yang berlebihan"
+    ],
+    "rules": [
+      { "name": "The High-Contrast Pastel Rule", "body": "Karena primary menggunakan warna pastel yang terang, teks di dalam tombol primary tidak boleh berwarna putih. Selalu gunakan teks berwarna gelap (ink/primary-foreground) di atas latar belakang pastel agar memenuhi standar aksesibilitas WCAG.", "section": "colors" },
+      { "name": "The System First Rule", "body": "Jangan memuat font kustom dari pihak ketiga jika tidak mutlak diperlukan. Kecepatan loading (performa) adalah prioritas. Font bawaan sistem operasi sudah cukup indah dan memastikan aplikasi memuat dengan instan.", "section": "typography" },
+      { "name": "The Functional Shadow Rule", "body": "Bayangan (shadows) digunakan murni untuk memperjelas hierarki dan memisahkan lapisan konten (seperti memisahkan modal dari halaman utama), bukan sekadar untuk gaya-gayaan.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do gunakan teks warna gelap (ink) di atas tombol berbackground pastel.",
+      "Do pastikan transisi halaman terasa secepat kilat.",
+      "Do gunakan bahasa yang familiar dan tidak teknis untuk label tombol."
+    ],
+    "donts": [
+      "Don't gunakan desain kelas enterprise yang kaku, rumit, atau \"over-decorated\".",
+      "Don't membuat alur aplikasi melambat karena animasi (hindari durasi transisi >200ms).",
+      "Don't gunakan teks warna abu-abu muda berukuran kecil yang sulit dibaca kasir dalam keadaan terburu-buru."
+    ]
+  }
+}
