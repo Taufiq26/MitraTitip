@@ -33,10 +33,12 @@ export function ProductDialog({ product, triggerText, triggerVariant }: { produc
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant={triggerVariant || (product ? "outline" : "default")} size="sm">
-          {triggerText || (product ? "Edit" : "Tambah Produk")}
-        </Button>
+      <DialogTrigger
+        render={
+          <Button variant={triggerVariant || (product ? "outline" : "default")} size="sm" />
+        }
+      >
+        {triggerText || (product ? "Edit" : "Tambah Produk")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -81,7 +81,7 @@ export default async function ReportsPage({
       const item = ti as { product_id: string; qty: number; subtotal: number; products: { name: string } | { name: string }[] | null };
       return {
         productId: item.product_id,
-        productName: Array.isArray(item.products) ? item.products[0]?.name : item.products?.name,
+        productName: (Array.isArray(item.products) ? item.products[0]?.name : item.products?.name) || "Unknown",
         qty: item.qty,
         subtotal: item.subtotal,
       };
