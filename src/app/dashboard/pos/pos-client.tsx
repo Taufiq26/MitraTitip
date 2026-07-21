@@ -308,7 +308,7 @@ export function PosClient({
                 className="group flex h-full min-h-[8.5rem] flex-col justify-between rounded-3xl bg-background p-5 text-left shadow-sm ring-1 ring-foreground/5 transition-all duration-200 hover:-translate-y-1 hover:bg-primary/[0.02] hover:shadow-md hover:ring-primary/30 active:translate-y-0 active:scale-95"
               >
                 <div className="flex w-full items-start justify-between gap-2">
-                  <p className="line-clamp-3 pr-1 text-[15px] font-bold leading-snug tracking-tight text-foreground/90 group-hover:text-foreground">{product.name}</p>
+                  <p className="pr-1 text-[15px] font-bold leading-snug tracking-tight text-foreground/90 group-hover:text-foreground">{product.name}</p>
                   <div className="flex shrink-0 flex-col items-end gap-1.5 mt-0.5">
                     {product.isConsignment && (
                       <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary-foreground">Titipan</span>
