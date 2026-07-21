@@ -3,14 +3,6 @@ import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { mapProductRow, type ProductRow } from "@/lib/types/product";
 import { computeSalesReport } from "@/lib/reports/sales-report";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ProductDialog } from "./products/product-dialog";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
@@ -44,85 +36,95 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">
-        Selamat datang, {profile.fullName.split(" ")[0]}
-      </h1>
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-extrabold tracking-tight">
+          Selamat datang, {profile.fullName.split(" ")[0]}
+        </h1>
+        <p className="text-base font-medium text-muted-foreground">
+          Berikut adalah ringkasan operasional MitraTitip hari ini.
+        </p>
+      </div>
 
       {profile.role === "admin" && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Penjualan hari ini</CardTitle>
-              <CardDescription>{todaySales?.transactionCount ?? 0} transaksi</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span>{currencyFormatter.format(todaySales?.totalRevenue ?? 0)}</span>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          
+          {/* Sales Bento */}
+          <div className="flex flex-col justify-between space-y-12 rounded-3xl bg-background p-8 shadow-sm">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Penjualan Hari Ini</p>
+              <p className="mt-1 text-sm font-medium text-muted-foreground/80">{todaySales?.transactionCount ?? 0} transaksi diselesaikan</p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-5xl font-black tracking-tighter sm:text-6xl text-foreground">
+                {currencyFormatter.format(todaySales?.totalRevenue ?? 0)}
+              </p>
+              <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5">
+                <p className="text-sm font-bold text-primary">
+                  Laba bersih: {currencyFormatter.format(todaySales?.netProfit ?? 0)}
+                </p>
               </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Laba bersih</span>
-                <span>{currencyFormatter.format(todaySales?.netProfit ?? 0)}</span>
-              </div>
+            </div>
+            
+            <div>
               <Link
                 href="/dashboard/reports"
-                className="text-sm text-primary hover:underline"
+                className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-foreground transition-colors hover:text-primary"
               >
-                Lihat laporan lengkap &rarr;
+                Lihat Laporan Lengkap &rarr;
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Stok rendah
-                {lowStockProducts.length > 0 && (
-                  <Badge variant="destructive">{lowStockProducts.length}</Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                {lowStockProducts.length === 0
-                  ? "Semua stok barang masih aman."
-                  : "Barang berikut perlu segera diisi ulang."}
-              </CardDescription>
-            </CardHeader>
-            {lowStockProducts.length > 0 && (
-              <CardContent>
-                <ul className="space-y-1 text-sm">
-                  {lowStockProducts.map((product) => (
-                    <li key={product.id} className="flex justify-between items-center py-1">
-                      <div>
-                        <span className="block font-medium">{product.name}</span>
-                        <span className="text-muted-foreground text-xs">
-                          Sisa: {product.stockQty} (Batas: {product.lowStockThreshold})
-                        </span>
-                      </div>
-                      <ProductDialog product={product} triggerText="Isi Stok" triggerVariant="secondary" />
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
+          {/* Stock Bento */}
+          <div className={`flex flex-col rounded-3xl p-8 shadow-sm ${lowStockProducts.length > 0 ? "bg-destructive/5" : "bg-background"}`}>
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status Stok Barang</p>
+              {lowStockProducts.length > 0 && (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-sm font-bold text-destructive-foreground shadow-sm">
+                  {lowStockProducts.length}
+                </span>
+              )}
+            </div>
+            
+            {lowStockProducts.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center space-y-2 py-12 text-center">
+                 <p className="text-2xl font-bold tracking-tight text-muted-foreground">Semua stok aman.</p>
+                 <p className="text-sm font-medium text-muted-foreground/70">Tidak ada barang yang perlu diisi ulang saat ini.</p>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {lowStockProducts.map((product) => (
+                  <li key={product.id} className="flex items-center justify-between rounded-2xl bg-background/60 p-4 backdrop-blur-sm">
+                    <div>
+                      <span className="block font-bold">{product.name}</span>
+                      <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Sisa: {product.stockQty} &middot; Batas: {product.lowStockThreshold}
+                      </span>
+                    </div>
+                    <ProductDialog product={product} triggerText="Isi Stok" triggerVariant="outline" />
+                  </li>
+                ))}
+              </ul>
             )}
-          </Card>
+          </div>
+          
         </div>
       )}
 
       {profile.role === "kasir" && (
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Mulai transaksi</CardTitle>
-            <CardDescription>
-              Buka halaman Kasir untuk mulai melayani pelanggan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/pos" className="text-sm text-primary hover:underline">
-              Buka Kasir &rarr;
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="mx-auto flex max-w-xl flex-col items-center space-y-8 rounded-3xl bg-primary p-12 text-center text-primary-foreground shadow-sm">
+          <div className="space-y-4">
+            <h2 className="text-5xl font-extrabold tracking-tighter">Buka Kasir</h2>
+            <p className="text-lg font-medium leading-relaxed opacity-90">
+              Mesin kasir siap digunakan. Silakan masuk untuk mulai melayani pelanggan hari ini.
+            </p>
+          </div>
+          <Link href="/dashboard/pos" className="inline-flex h-14 items-center justify-center rounded-full bg-background px-8 text-base font-bold text-foreground transition-all hover:scale-105 hover:bg-background/90 shadow-lg">
+            Mulai Transaksi &rarr;
+          </Link>
+        </div>
       )}
     </div>
   );
