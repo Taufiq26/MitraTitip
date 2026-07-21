@@ -63,6 +63,13 @@ export default async function ConsignorDetailPage({
 
   const batches = (batchRows ?? []).map(mapConsignmentBatchRow);
 
+  const activeBatches = batches.filter(
+    (b) => b.status === "active" && b.qtyReceived - b.qtySold - b.qtyReturned > 0
+  );
+  const inactiveBatches = batches.filter(
+    (b) => b.status !== "active" || b.qtyReceived - b.qtySold - b.qtyReturned <= 0
+  );
+
   return (
     <div className="space-y-4">
       <Link
@@ -106,14 +113,14 @@ export default async function ConsignorDetailPage({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {batches.length === 0 && (
+          {activeBatches.length === 0 && (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground">
-                Belum ada titipan dari penitip ini.
+                Belum ada titipan aktif dari penitip ini.
               </TableCell>
             </TableRow>
           )}
-          {batches.map((batch) => {
+          {activeBatches.map((batch) => {
             const remaining = batch.qtyReceived - batch.qtySold - batch.qtyReturned;
             return (
               <TableRow key={batch.id}>
@@ -142,6 +149,47 @@ export default async function ConsignorDetailPage({
         </TableBody>
       </Table>
       </div>
+
+      {inactiveBatches.length > 0 && (
+        <details className="group [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center gap-2 font-medium text-muted-foreground hover:text-foreground">
+            <span className="transition-transform group-open:rotate-90">
+              ▶
+            </span>
+            Lihat Riwayat Titipan Selesai ({inactiveBatches.length})
+          </summary>
+          <div className="mt-4 rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Barang</TableHead>
+                  <TableHead>Tanggal titip</TableHead>
+                  <TableHead>Titip / Terjual / Retur</TableHead>
+                  <TableHead>Fee</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inactiveBatches.map((batch) => (
+                  <TableRow key={batch.id} className="opacity-70">
+                    <TableCell className="font-medium">{batch.productName}</TableCell>
+                    <TableCell>{batch.dateReceived}</TableCell>
+                    <TableCell>
+                      {batch.qtyReceived} / {batch.qtySold} / {batch.qtyReturned}
+                    </TableCell>
+                    <TableCell>{batch.feePercent}%</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {batch.status === "active" ? "selesai" : batch.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </details>
+      )}
     </div>
   );
 }
