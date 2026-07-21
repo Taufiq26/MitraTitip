@@ -1,19 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { TenantTable, TenantWithUsers, TenantUser } from "./tenant-table";
 
 interface TenantRow {
   id: string;
@@ -21,12 +8,16 @@ interface TenantRow {
   created_at: string;
 }
 
-interface ProfileTenantRow {
+interface ProfileRow {
+  id: string;
   tenant_id: string | null;
+  full_name: string;
+  role: string;
 }
 
 export default async function SuperAdminPage() {
   const supabase = await createClient();
+  const supabaseAdmin = createAdminClient();
 
   const { data: tenants } = await supabase
     .from("tenants")
@@ -36,59 +27,49 @@ export default async function SuperAdminPage() {
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("tenant_id")
-    .returns<ProfileTenantRow[]>();
+    .select("id, tenant_id, full_name, role")
+    .returns<ProfileRow[]>();
 
-  const userCountByTenant = new Map<string, number>();
+  const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
+    perPage: 1000,
+  });
+
+  const emailById = new Map<string, string>();
+  if (authUsers?.users) {
+    for (const user of authUsers.users) {
+      if (user.email) {
+        emailById.set(user.id, user.email);
+      }
+    }
+  }
+
+  const usersByTenant = new Map<string, TenantUser[]>();
   for (const profile of profiles ?? []) {
     if (!profile.tenant_id) continue;
-    userCountByTenant.set(
-      profile.tenant_id,
-      (userCountByTenant.get(profile.tenant_id) ?? 0) + 1,
-    );
+    
+    if (!usersByTenant.has(profile.tenant_id)) {
+      usersByTenant.set(profile.tenant_id, []);
+    }
+    
+    usersByTenant.get(profile.tenant_id)!.push({
+      id: profile.id,
+      full_name: profile.full_name,
+      role: profile.role,
+      email: emailById.get(profile.id) ?? "Tidak ada email",
+    });
   }
 
   const tenantList = tenants ?? [];
+  const tenantsWithUsers: TenantWithUsers[] = tenantList.map((tenant) => ({
+    id: tenant.id,
+    name: tenant.name,
+    created_at: tenant.created_at,
+    users: usersByTenant.get(tenant.id) ?? [],
+  }));
 
   return (
     <div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Daftar Tenant</CardTitle>
-          <CardDescription>
-            {tenantList.length} toko/kantin terdaftar di MitraTitip
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Toko</TableHead>
-                <TableHead>Tanggal Daftar</TableHead>
-                <TableHead>Jumlah User</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tenantList.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    Belum ada tenant yang mendaftar.
-                  </TableCell>
-                </TableRow>
-              )}
-              {tenantList.map((tenant) => (
-                <TableRow key={tenant.id}>
-                  <TableCell className="font-medium">{tenant.name}</TableCell>
-                  <TableCell>
-                    {new Date(tenant.created_at).toLocaleDateString("id-ID")}
-                  </TableCell>
-                  <TableCell>{userCountByTenant.get(tenant.id) ?? 0}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <TenantTable tenants={tenantsWithUsers} />
     </div>
   );
 }
