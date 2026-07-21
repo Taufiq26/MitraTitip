@@ -19,7 +19,16 @@ export type SettlementPreview = {
 
 export type SettlementPreviewState = {
   error: string | null;
-  preview: SettlementPreview | null;
+  existingSettlements?: {
+    id: string;
+    totalSales: number;
+    totalFee: number;
+    totalPayout: number;
+    createdAt: string;
+    periodStart: string;
+    periodEnd: string;
+  }[];
+  unsettledPreview?: SettlementPreview | null;
 };
 
 export async function previewSettlement(
@@ -33,15 +42,17 @@ export async function previewSettlement(
   });
 
   if (!parsed.success) {
-    return { error: "Pilih penitip dan periode yang valid", preview: null };
+    return { error: "Pilih penitip dan periode yang valid" };
   }
 
   const profile = await getCurrentProfile();
   if (!profile.tenantId) {
-    return { error: "Tenant tidak ditemukan", preview: null };
+    return { error: "Tenant tidak ditemukan" };
   }
 
   const supabase = await createClient();
+  
+  // 1. Get all transactions in period
   const { data, error } = await supabase
     .rpc("compute_consignor_settlement", {
       p_consignor_id: parsed.data.consignorId,
@@ -51,7 +62,7 @@ export async function previewSettlement(
     .single();
 
   if (error || !data) {
-    return { error: "Gagal menghitung rekap settlement", preview: null };
+    return { error: "Gagal menghitung rekap settlement" };
   }
 
   const row = data as {
@@ -60,25 +71,47 @@ export async function previewSettlement(
     total_payout: number;
   };
 
-  const { data: existingSettlement } = await supabase
+  // 2. Get existing settlements in period (overlapping)
+  const { data: existing } = await supabase
     .from("settlements")
-    .select("id")
+    .select("id, total_sales, total_fee, total_payout, created_at, period_start, period_end")
     .eq("consignor_id", parsed.data.consignorId)
-    .eq("period_start", parsed.data.periodStart)
-    .eq("period_end", parsed.data.periodEnd)
-    .limit(1)
-    .maybeSingle();
+    .lte("period_start", parsed.data.periodEnd)
+    .gte("period_end", parsed.data.periodStart)
+    .order("created_at", { ascending: true });
 
-  const isRealized = !!existingSettlement;
+  const existingSettlements = (existing ?? []).map((s) => ({
+    id: s.id,
+    totalSales: s.total_sales,
+    totalFee: s.total_fee,
+    totalPayout: s.total_payout,
+    createdAt: s.created_at,
+    periodStart: s.period_start,
+    periodEnd: s.period_end,
+  }));
+
+  // 3. Subtract existing from total to find unsettled
+  const settledSales = existingSettlements.reduce((sum, s) => sum + s.totalSales, 0);
+  const settledFee = existingSettlements.reduce((sum, s) => sum + s.totalFee, 0);
+  const settledPayout = existingSettlements.reduce((sum, s) => sum + s.totalPayout, 0);
+
+  const unsettledSales = Math.max(0, row.total_sales - settledSales);
+  const unsettledFee = Math.max(0, row.total_fee - settledFee);
+  const unsettledPayout = Math.max(0, row.total_payout - settledPayout);
+
+  let unsettledPreview = null;
+  if (unsettledSales > 0) {
+    unsettledPreview = {
+      totalSales: unsettledSales,
+      totalFee: unsettledFee,
+      totalPayout: unsettledPayout,
+    };
+  }
 
   return {
     error: null,
-    preview: {
-      totalSales: row.total_sales,
-      totalFee: row.total_fee,
-      totalPayout: row.total_payout,
-      isRealized,
-    },
+    existingSettlements,
+    unsettledPreview,
   };
 }
 
