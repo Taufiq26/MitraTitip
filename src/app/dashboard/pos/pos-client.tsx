@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Trash2 } from "lucide-react";
 import type { Product } from "@/lib/types/product";
 import { db } from "@/lib/offline/db";
 import {
@@ -316,15 +317,25 @@ export function PosClient({
                     {currencyFormatter.format(item.unitPrice)}
                   </p>
                 </div>
-                <Input
-                  type="number"
-                  min={0}
-                  value={item.qty}
-                  onChange={(e) =>
-                    updateQty(item.productId, Number(e.target.value))
-                  }
-                  className="w-16"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={item.qty}
+                    onChange={(e) =>
+                      updateQty(item.productId, Number(e.target.value))
+                    }
+                    className="w-16 h-9"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                    onClick={() => updateQty(item.productId, 0)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
 
