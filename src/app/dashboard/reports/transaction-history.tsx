@@ -88,7 +88,7 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
           />
         </div>
       </div>
-      
+
       <div className="rounded-xl border bg-background overflow-hidden shadow-sm">
         <Table>
           <TableHeader className="bg-muted/30">
@@ -110,71 +110,68 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
             )}
             {filteredTransactions.map((t) => (
               <React.Fragment key={t.id}>
-                <TableRow 
-                  className="cursor-pointer hover:bg-muted/50"
+                <TableRow
+                  className={`cursor-pointer transition-colors ${expandedRows.has(t.id) ? 'bg-muted/10' : 'hover:bg-muted/30'}`}
                   onClick={() => toggleRow(t.id)}
                 >
-                  <TableCell className="pl-4">
-                    {expandedRows.has(t.id) ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    )}
+                  <TableCell className="pl-4 w-12">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition-colors">
+                      {expandedRows.has(t.id) ? (
+                        <ChevronDown className="h-5 w-5" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5" />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(t.createdAt).toLocaleString("id-ID", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
+                    <div className="font-semibold text-foreground">
+                      {new Date(t.createdAt).toLocaleDateString("id-ID", {
+                        day: "numeric", month: "short", year: "numeric"
+                      })}
+                    </div>
+                    <div className="text-xs font-medium text-muted-foreground mt-0.5">
+                      {new Date(t.createdAt).toLocaleTimeString("id-ID", {
+                        hour: "2-digit", minute: "2-digit"
+                      })}
+                    </div>
                   </TableCell>
-                  <TableCell>{t.cashierName || "-"}</TableCell>
+                  <TableCell className="font-medium">{t.cashierName || "-"}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="font-normal">
+                    <Badge variant="secondary" className="font-semibold px-3 py-1 rounded-md text-xs tracking-wide">
                       {PAYMENT_LABEL[t.paymentMethod] || t.paymentMethod}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right font-semibold">
+                  <TableCell className="text-right font-bold text-lg tracking-tight text-foreground">
                     {currencyFormatter.format(t.totalAmount)}
                   </TableCell>
                 </TableRow>
-                
+
                 {/* Expandable Row Content */}
                 {expandedRows.has(t.id) && (
-                  <TableRow className="bg-muted/5 hover:bg-muted/5">
-                    <TableCell colSpan={5} className="p-0">
-                      <div className="p-4 pl-12 bg-muted/20">
-                        <p className="text-xs font-semibold mb-3 text-muted-foreground uppercase tracking-wider">
+                  <TableRow className="bg-muted/10 hover:bg-muted/10 border-t-0">
+                    <TableCell colSpan={5} className="p-0 border-b-0">
+                      <div className="pl-[4.5rem] pr-6 py-6 space-y-4">
+                        <h4 className="text-xs font-bold tracking-widest uppercase text-muted-foreground">
                           Detail Barang
-                        </p>
-                        <div className="border rounded-md bg-background overflow-hidden max-w-2xl">
-                          <Table>
-                            <TableHeader className="bg-muted/50">
-                              <TableRow className="hover:bg-transparent">
-                                <TableHead className="h-8 py-1">Nama Barang</TableHead>
-                                <TableHead className="h-8 py-1 text-right w-24">Qty</TableHead>
-                                <TableHead className="h-8 py-1 text-right w-32">Subtotal</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {t.items.length === 0 && (
-                                <TableRow className="hover:bg-transparent">
-                                  <TableCell colSpan={3} className="text-center text-muted-foreground py-2 text-sm">
-                                    Tidak ada item.
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                              {t.items.map((item, index) => (
-                                <TableRow key={index} className="hover:bg-transparent border-0">
-                                  <TableCell className="py-2 text-sm">{item.productName || "-"}</TableCell>
-                                  <TableCell className="py-2 text-sm text-right">{item.qty}</TableCell>
-                                  <TableCell className="py-2 text-sm text-right font-mono">
-                                    {currencyFormatter.format(item.subtotal)}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+                        </h4>
+
+                        {t.items.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">Tidak ada item.</p>
+                        ) : (
+                          <div className="max-w-2xl bg-background rounded-xl border p-5 shadow-sm space-y-3">
+                            {t.items.map((item, index) => (
+                              <div key={index} className="flex justify-between items-start text-sm">
+                                <div className="flex gap-4">
+                                  <span className="font-bold text-muted-foreground w-6 text-right">{item.qty}x</span>
+                                  <span className="font-semibold text-foreground">{item.productName || "-"}</span>
+                                </div>
+                                <div className="font-semibold tabular-nums text-foreground">
+                                  {currencyFormatter.format(item.subtotal)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
