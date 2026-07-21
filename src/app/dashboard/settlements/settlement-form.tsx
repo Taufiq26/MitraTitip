@@ -78,21 +78,21 @@ export function SettlementForm({
               value={consignorId}
               onValueChange={(value) => setConsignorId(value ?? "")}
             >
-              <SelectTrigger id="consignorId" className="w-full h-14 rounded-2xl bg-muted/40 border-none px-5 text-base font-bold shadow-none focus-visible:ring-primary/50 transition-colors">
+              <SelectTrigger id="consignorId" className="w-full h-14 rounded-2xl bg-muted/40 border-none px-5 py-0 mt-5 text-[15px] font-bold shadow-none focus-visible:ring-primary/50 transition-colors">
                 <SelectValue placeholder="Pilih mitra...">
                   {consignors.find((c) => c.id === consignorId)?.name}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-background/95 backdrop-blur-xl ring-1 ring-foreground/5">
                 {consignors.map((c) => (
-                  <SelectItem key={c.id} value={c.id} className="font-bold text-base cursor-pointer rounded-xl py-3 px-4 mb-1 last:mb-0 focus:bg-primary/10 focus:text-primary transition-colors">
+                  <SelectItem key={c.id} value={c.id} className="font-bold text-[15px] cursor-pointer rounded-xl py-3 px-4 mb-1 last:mb-0 focus:bg-primary/10 focus:text-primary transition-colors">
                     {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="periodStart" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mulai Tanggal</Label>
             <Input
@@ -102,10 +102,10 @@ export function SettlementForm({
               value={periodStart}
               onChange={(e) => setPeriodStart(e.target.value)}
               required
-              className="h-14 rounded-2xl bg-muted/40 border-none px-5 text-sm font-bold shadow-none focus-visible:ring-primary/50 transition-colors cursor-pointer"
+              className="h-14 flex items-center rounded-2xl bg-muted/40 border-none px-5 py-0 pt-1 text-[15px] font-bold shadow-none focus-visible:ring-primary/50 transition-colors cursor-pointer"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="periodEnd" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sampai Tanggal</Label>
             <Input
@@ -115,7 +115,7 @@ export function SettlementForm({
               value={periodEnd}
               onChange={(e) => setPeriodEnd(e.target.value)}
               required
-              className="h-14 rounded-2xl bg-muted/40 border-none px-5 text-sm font-bold shadow-none focus-visible:ring-primary/50 transition-colors cursor-pointer"
+              className="h-14 flex items-center rounded-2xl bg-muted/40 border-none px-5 py-0 pt-1 text-[15px] font-bold shadow-none focus-visible:ring-primary/50 transition-colors cursor-pointer"
             />
           </div>
         </div>
@@ -127,8 +127,8 @@ export function SettlementForm({
         )}
 
         <div className="pt-2">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isPending || !consignorId}
             className="h-14 px-8 rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-primary/10 transition-all hover:shadow-primary/20 active:scale-[0.98] w-full md:w-auto"
           >
@@ -142,9 +142,9 @@ export function SettlementForm({
         {state.existingSettlements?.map((settled) => (
           <Card key={settled.id} className="rounded-3xl border-none bg-muted/40 shadow-none ring-1 ring-foreground/5 overflow-hidden">
             <div className="bg-foreground/[0.02] border-b border-foreground/5 p-6">
-              <div className="flex items-start justify-between mb-2">
-                <CardTitle className="text-xl font-bold">Riwayat Settlement</CardTitle>
-                <Badge className="font-bold tracking-wider uppercase text-[10px] px-2.5 py-1 bg-emerald-500 text-white hover:bg-emerald-600 border-none shadow-sm">
+              <div className="flex items-center justify-between mb-3 h-8">
+                <CardTitle className="text-xl font-bold my-auto">Riwayat Settlement</CardTitle>
+                <Badge className="font-bold tracking-wider uppercase text-[10px] px-2.5 py-1 h-6 flex items-center justify-center bg-emerald-500 text-white hover:bg-emerald-600 border-none shadow-sm mt-0.5">
                   Sudah Direalisasi
                 </Badge>
               </div>
@@ -152,7 +152,7 @@ export function SettlementForm({
                 Periode {settled.periodStart} &ndash; {settled.periodEnd}
               </CardDescription>
             </div>
-            
+
             <CardContent className="p-6 space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm font-medium">
@@ -173,28 +173,32 @@ export function SettlementForm({
                 Direalisasi pada: <span className="font-bold text-foreground/80">{new Date(settled.createdAt).toLocaleString("id-ID")}</span>
               </p>
 
-              {settled.details && settled.details.length > 0 && (
-                <div className="mt-6">
-                  <details className="group [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex cursor-pointer items-center justify-between font-bold text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">
-                      <span className="flex items-center gap-2">
-                        <span className="transition-transform group-open:rotate-90">▶</span>
-                        Lihat Rincian Barang
-                      </span>
-                    </summary>
-                    <ul className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                      {settled.details.map(d => (
+              <div className="mt-6">
+                <details className="group [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer items-center justify-between font-bold text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">
+                    <span className="flex items-center gap-2">
+                      <span className="transition-transform group-open:rotate-90">▶</span>
+                      Lihat Rincian Barang
+                    </span>
+                  </summary>
+                  <ul className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    {(!settled.details || settled.details.length === 0) ? (
+                      <li className="text-xs text-muted-foreground p-2 text-center rounded-lg bg-background/50 ring-1 ring-foreground/5">
+                        Tidak ada rincian barang (transaksi versi lawas / oversold)
+                      </li>
+                    ) : (
+                      settled.details.map(d => (
                         <li key={d.productId} className="flex justify-between items-center text-xs p-2 rounded-lg bg-background/50 ring-1 ring-foreground/5">
                           <span className="truncate pr-2 font-medium">
                             <span className="font-bold mr-1 text-foreground">{d.qty}x</span> {d.productName}
                           </span>
                           <span className="font-bold text-muted-foreground">{currencyFormatter.format(d.totalSales)}</span>
                         </li>
-                      ))}
-                    </ul>
-                  </details>
-                </div>
-              )}
+                      ))
+                    )}
+                  </ul>
+                </details>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -203,7 +207,7 @@ export function SettlementForm({
         {state.unsettledPreview ? (
           <Card className="rounded-3xl border-none bg-background shadow-xl ring-1 ring-primary/20 overflow-hidden lg:col-span-2 xl:col-span-2">
             <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-primary/10 p-6 md:p-8">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
                 <div>
                   <CardTitle className="text-2xl font-extrabold tracking-tight">Kalkulasi Tagihan Baru</CardTitle>
                   <CardDescription className="font-medium text-muted-foreground mt-1">
@@ -215,7 +219,7 @@ export function SettlementForm({
                 </Badge>
               </div>
             </div>
-            
+
             <CardContent className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-base font-medium">
@@ -226,7 +230,7 @@ export function SettlementForm({
                   <span className="text-muted-foreground">Potongan Fee Toko</span>
                   <span className="font-bold text-destructive">{currencyFormatter.format(state.unsettledPreview.totalFee)}</span>
                 </div>
-                
+
                 <div className="p-4 rounded-2xl bg-primary/5 ring-1 ring-primary/20 mt-6">
                   <div className="flex flex-col">
                     <span className="text-xs font-black uppercase tracking-widest text-primary mb-1">Total Yang Harus Dibayar</span>
@@ -239,7 +243,7 @@ export function SettlementForm({
                     <p className="text-sm font-bold text-destructive">{finalizeError}</p>
                   </div>
                 )}
-                
+
                 <Button
                   className="w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98] mt-6"
                   disabled={finalized}

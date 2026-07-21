@@ -42,68 +42,62 @@ export type SettlementPreviewState = {
   unsettledPreview?: SettlementPreview | null;
 };
 
-async function getSettlementDetails(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getChronologicalSettlementItems(
   supabase: any,
-  consignorId: string,
-  periodStart: string,
-  periodEnd: string,
-  minTime?: string | null,
-  maxTime?: string | null
-): Promise<SettlementItemDetail[]> {
-  let query = supabase
+  consignorId: string
+) {
+  // 1. Ambil semua batch penitip ini untuk tahu limit stok aslinya
+  const { data: batches } = await supabase
+    .from("consignment_batches")
+    .select("id, qty_received, qty_returned")
+    .eq("consignor_id", consignorId);
+
+  const batchCaps = new Map<string, number>();
+  for (const b of batches || []) {
+    batchCaps.set(b.id, b.qty_received - (b.qty_returned || 0));
+  }
+
+  // 2. Ambil SEMUA transaksi untuk batch ini sepanjang waktu
+  const { data: items } = await supabase
     .from("transaction_items")
     .select(`
+      id,
       qty,
-      subtotal,
+      unit_price,
       fee_percent_snapshot,
+      consignment_batch_id,
       products ( id, name ),
-      transactions!inner ( created_at ),
-      consignment_batches!inner ( consignor_id )
+      transactions!inner ( created_at )
     `)
-    .eq("consignment_batches.consignor_id", consignorId);
+    .in("consignment_batch_id", batches?.map((b: any) => b.id) || []);
 
-  if (minTime) {
-    query = query.gt("transactions.created_at", minTime);
-  } else {
-    query = query.gte("transactions.created_at", `${periodStart}T00:00:00.000Z`);
+  if (!items) return [];
+
+  // 3. Urutkan dari yang paling lama
+  const sortedItems = items.sort((a: any, b: any) => {
+    return new Date(a.transactions.created_at).getTime() - new Date(b.transactions.created_at).getTime();
+  });
+
+  // 4. Lewati transaksi chronologically, capping qty
+  const cappedItems = [];
+  for (const item of sortedItems) {
+    const batchId = item.consignment_batch_id;
+    if (!batchId) continue;
+
+    const remainingCap = batchCaps.get(batchId) || 0;
+    if (remainingCap <= 0) continue; // Sudah melebihi stok, abaikan transaksi sisa
+
+    const allowedQty = Math.min(item.qty, remainingCap);
+    batchCaps.set(batchId, remainingCap - allowedQty);
+
+    cappedItems.push({
+      ...item,
+      cappedQty: allowedQty,
+      cappedSubtotal: allowedQty * item.unit_price
+    });
   }
 
-  if (maxTime) {
-    query = query.lte("transactions.created_at", maxTime);
-  } else {
-    query = query.lte("transactions.created_at", `${periodEnd}T23:59:59.999Z`);
-  }
-
-  const { data } = await query;
-
-  if (!data) return [];
-
-  const grouped = new Map<string, SettlementItemDetail>();
-  for (const item of data) {
-    const product = Array.isArray(item.products) ? item.products[0] : item.products;
-    if (!product) continue;
-    const pId = product.id;
-    
-    if (!grouped.has(pId)) {
-      grouped.set(pId, {
-        productId: pId,
-        productName: product.name,
-        qty: 0,
-        totalSales: 0,
-        totalFee: 0,
-        totalPayout: 0,
-      });
-    }
-    const g = grouped.get(pId)!;
-    g.qty += Number(item.qty);
-    g.totalSales += Number(item.subtotal);
-    
-    const fee = Number(item.subtotal) * (Number(item.fee_percent_snapshot) / 100);
-    g.totalFee += fee;
-    g.totalPayout += (Number(item.subtotal) - fee);
-  }
-  return Array.from(grouped.values());
+  return cappedItems;
 }
 
 export async function previewSettlement(
@@ -127,27 +121,30 @@ export async function previewSettlement(
 
   const supabase = await createClient();
   
-  // 1. Get all transactions in period
-  const { data, error } = await supabase
-    .rpc("compute_consignor_settlement", {
-      p_consignor_id: parsed.data.consignorId,
-      p_period_start: parsed.data.periodStart,
-      p_period_end: parsed.data.periodEnd,
-    })
-    .single();
+  // 1. Hitung semua item valid (setelah di-cap) secara kronologis
+  const allCappedItems = await getChronologicalSettlementItems(supabase, parsed.data.consignorId);
 
-  if (error || !data) {
-    console.error("Error computing consignor settlement:", error);
-    return { error: "Gagal menghitung rekap settlement" };
+  // 2. Filter item yang masuk dalam periode ini
+  const periodStartIso = `${parsed.data.periodStart}T00:00:00.000Z`;
+  const periodEndIso = `${parsed.data.periodEnd}T23:59:59.999Z`;
+  
+  const periodItems = allCappedItems.filter((item: any) => {
+    const time = item.transactions.created_at;
+    return time >= periodStartIso && time <= periodEndIso;
+  });
+
+  let totalSales = 0;
+  let totalFee = 0;
+  let totalPayout = 0;
+
+  for (const item of periodItems) {
+    totalSales += item.cappedSubtotal;
+    const fee = item.cappedSubtotal * (item.fee_percent_snapshot / 100);
+    totalFee += fee;
+    totalPayout += (item.cappedSubtotal - fee);
   }
 
-  const row = data as {
-    total_sales: number;
-    total_fee: number;
-    total_payout: number;
-  };
-
-  // 2. Get existing settlements in period (overlapping)
+  // 3. Get existing settlements in period
   const { data: existing } = await supabase
     .from("settlements")
     .select("id, total_sales, total_fee, total_payout, created_at, period_start, period_end")
@@ -160,14 +157,38 @@ export async function previewSettlement(
   let lastCreatedAt: string | null = null;
 
   for (const s of (existing ?? [])) {
-    const sDetails = await getSettlementDetails(
-      supabase,
-      parsed.data.consignorId,
-      s.period_start,
-      s.period_end,
-      lastCreatedAt,
-      s.created_at
-    );
+    // Cari detail untuk settlement ini
+    const sItems = periodItems.filter((item: any) => {
+      const time = item.transactions.created_at;
+      const minTime = lastCreatedAt;
+      const maxTime = s.created_at;
+      if (minTime && time <= minTime) return false;
+      if (time > maxTime) return false;
+      return true;
+    });
+
+    const grouped = new Map<string, SettlementItemDetail>();
+    for (const item of sItems) {
+      const product = Array.isArray(item.products) ? item.products[0] : item.products;
+      const pId = product.id;
+      if (!grouped.has(pId)) {
+        grouped.set(pId, {
+          productId: pId,
+          productName: product.name,
+          qty: 0,
+          totalSales: 0,
+          totalFee: 0,
+          totalPayout: 0,
+        });
+      }
+      const g = grouped.get(pId)!;
+      g.qty += item.cappedQty;
+      g.totalSales += item.cappedSubtotal;
+      const fee = item.cappedSubtotal * (item.fee_percent_snapshot / 100);
+      g.totalFee += fee;
+      g.totalPayout += (item.cappedSubtotal - fee);
+    }
+
     lastCreatedAt = s.created_at;
     
     existingSettlements.push({
@@ -178,35 +199,53 @@ export async function previewSettlement(
       createdAt: s.created_at,
       periodStart: s.period_start,
       periodEnd: s.period_end,
-      details: sDetails,
+      details: Array.from(grouped.values()),
     });
   }
 
-  // 3. Calculate unsettled totals
-  const settledSales = existingSettlements.reduce((sum, s) => sum + s.totalSales, 0);
-  const settledFee = existingSettlements.reduce((sum, s) => sum + s.totalFee, 0);
-  const settledPayout = existingSettlements.reduce((sum, s) => sum + s.totalPayout, 0);
+  // 4. Calculate unsettled totals from the REMAINING items (after last settlement)
+  const unsettledItems = periodItems.filter((item: any) => {
+    if (!lastCreatedAt) return true;
+    return item.transactions.created_at > lastCreatedAt;
+  });
 
-  const unsettledSales = Math.max(0, row.total_sales - settledSales);
-  const unsettledFee = Math.max(0, row.total_fee - settledFee);
-  const unsettledPayout = Math.max(0, row.total_payout - settledPayout);
+  let unsettledSales = 0;
+  let unsettledFee = 0;
+  let unsettledPayout = 0;
+  const unsettledGrouped = new Map<string, SettlementItemDetail>();
+
+  for (const item of unsettledItems) {
+    unsettledSales += item.cappedSubtotal;
+    const fee = item.cappedSubtotal * (item.fee_percent_snapshot / 100);
+    unsettledFee += fee;
+    unsettledPayout += (item.cappedSubtotal - fee);
+
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const pId = product.id;
+    if (!unsettledGrouped.has(pId)) {
+      unsettledGrouped.set(pId, {
+        productId: pId,
+        productName: product.name,
+        qty: 0,
+        totalSales: 0,
+        totalFee: 0,
+        totalPayout: 0,
+      });
+    }
+    const g = unsettledGrouped.get(pId)!;
+    g.qty += item.cappedQty;
+    g.totalSales += item.cappedSubtotal;
+    g.totalFee += fee;
+    g.totalPayout += (item.cappedSubtotal - fee);
+  }
 
   let unsettledPreview = null;
   if (unsettledSales > 0) {
-    const unsettledDetails = await getSettlementDetails(
-      supabase,
-      parsed.data.consignorId,
-      parsed.data.periodStart,
-      parsed.data.periodEnd,
-      lastCreatedAt,
-      null
-    );
-
     unsettledPreview = {
       totalSales: unsettledSales,
       totalFee: unsettledFee,
       totalPayout: unsettledPayout,
-      details: unsettledDetails,
+      details: Array.from(unsettledGrouped.values()),
     };
   }
 
@@ -266,6 +305,41 @@ export async function getReceiptDetails(
     .single();
 
   const minTime = data ? data.created_at : null;
-  
-  return getSettlementDetails(supabase, consignorId, periodStart, periodEnd, minTime, settlementCreatedAt);
+  const maxTime = settlementCreatedAt;
+
+  const allCappedItems = await getChronologicalSettlementItems(supabase, consignorId);
+  const periodStartIso = `${periodStart}T00:00:00.000Z`;
+  const periodEndIso = `${periodEnd}T23:59:59.999Z`;
+
+  const sItems = allCappedItems.filter((item: any) => {
+    const time = item.transactions.created_at;
+    if (time < periodStartIso || time > periodEndIso) return false;
+    if (minTime && time <= minTime) return false;
+    if (time > maxTime) return false;
+    return true;
+  });
+
+  const grouped = new Map<string, SettlementItemDetail>();
+  for (const item of sItems) {
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const pId = product.id;
+    if (!grouped.has(pId)) {
+      grouped.set(pId, {
+        productId: pId,
+        productName: product.name,
+        qty: 0,
+        totalSales: 0,
+        totalFee: 0,
+        totalPayout: 0,
+      });
+    }
+    const g = grouped.get(pId)!;
+    g.qty += item.cappedQty;
+    g.totalSales += item.cappedSubtotal;
+    const fee = item.cappedSubtotal * (item.fee_percent_snapshot / 100);
+    g.totalFee += fee;
+    g.totalPayout += (item.cappedSubtotal - fee);
+  }
+
+  return Array.from(grouped.values());
 }
