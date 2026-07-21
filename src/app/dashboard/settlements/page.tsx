@@ -40,8 +40,16 @@ export default async function SettlementsPage({
   const settlements = (settlementRows ?? []).map(mapSettlementRow);
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-semibold">Rekap Settlement Titipan</h1>
+    <div className="relative space-y-8">
+      <div className="relative z-10 flex flex-col gap-4">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight">Rekap Settlement Titipan</h1>
+          <p className="text-base font-medium text-muted-foreground mt-2">
+            Pilih penitip dan periode untuk melihat dan merealisasikan penyelesaian pembayaran hasil penjualan.
+          </p>
+        </div>
+      </div>
+      
       <SettlementForm consignors={consignors} defaultConsignorId={consignorId} />
       <SettlementHistory settlements={settlements} />
     </div>
