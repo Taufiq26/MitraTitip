@@ -23,8 +23,8 @@ export default async function DashboardLayout({
   const profile = await getCurrentProfile();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
+    <div className="flex min-h-screen flex-col bg-muted/30">
+      <header className="flex items-center justify-between border-b bg-background px-6 py-3">
         <div className="flex items-center gap-6">
           <div>
             <p className="font-semibold">MitraTitip</p>

@@ -296,7 +296,7 @@ export function PosClient({
               key={product.id}
               type="button"
               onClick={() => addToCart(product)}
-              className="flex flex-col rounded-lg border p-3 text-left text-sm hover:bg-accent"
+              className="group flex flex-col rounded-lg bg-card p-3 text-left text-sm shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] ring-1 ring-foreground/5 transition-all duration-150 hover:ring-primary/50 hover:shadow-md"
             >
               <div className="flex w-full items-start justify-between gap-1">
                 <p className="font-medium pr-2">{product.name}</p>
