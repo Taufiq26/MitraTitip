@@ -125,7 +125,7 @@ export default async function ProductsPage({
                       )}
                     </TableCell>
                     <TableCell className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
+                      <div className="flex justify-end gap-2 opacity-100 transition-opacity relative z-20">
                         <ProductDialog product={product} />
                         <DeleteProductButton productId={product.id} />
                       </div>

@@ -71,27 +71,29 @@ export default async function ConsignorDetailPage({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-8">
       <Link
         href="/dashboard/consignors"
-        className="text-sm text-muted-foreground hover:underline inline-block mb-2"
+        className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2 mb-2"
       >
-        &larr; Kembali ke daftar penitip
+        <span className="text-lg leading-none">&larr;</span> Kembali ke daftar penitip
       </Link>
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{consignor.name}</h1>
-          {consignor.phone && (
-            <p className="text-sm text-muted-foreground">{consignor.phone}</p>
-          )}
+      
+      <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-extrabold tracking-tight">{consignor.name}</h1>
+          <p className="text-base font-medium text-muted-foreground">
+            {consignor.phone ? `Telepon: ${consignor.phone}` : "Belum ada nomor telepon terdaftar"}
+          </p>
         </div>
-        <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <Suspense fallback={<div className="w-full max-w-sm h-9 bg-muted rounded-md animate-pulse" />}>
-            <DataTableSearch placeholder="Cari nama barang..." />
+        
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <Suspense fallback={<div className="w-full md:w-64 h-11 bg-muted rounded-xl animate-pulse" />}>
+            <DataTableSearch placeholder="Cari barang titipan..." />
           </Suspense>
           <div className="flex gap-2">
             <Link href={`/dashboard/settlements?consignorId=${consignor.id}`}>
-              <Button variant="outline" size="sm" className="h-9">
+              <Button variant="outline" className="h-11 px-5 rounded-xl font-bold text-[11px] uppercase tracking-wider border-border shadow-sm hover:bg-muted">
                 Rekap Settlement
               </Button>
             </Link>
@@ -99,94 +101,114 @@ export default async function ConsignorDetailPage({
           </div>
         </div>
       </div>
-      <div className="rounded-md border">
-        <Table>
 
-        <TableHeader>
-          <TableRow>
-            <TableHead>Barang</TableHead>
-            <TableHead>Tanggal titip</TableHead>
-            <TableHead>Titip / Terjual / Retur</TableHead>
-            <TableHead>Fee</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {activeBatches.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
-                Belum ada titipan aktif dari penitip ini.
-              </TableCell>
-            </TableRow>
-          )}
-          {activeBatches.map((batch) => {
-            const remaining = batch.qtyReceived - batch.qtySold - batch.qtyReturned;
-            return (
-              <TableRow key={batch.id}>
-                <TableCell className="font-medium">{batch.productName}</TableCell>
-                <TableCell>{batch.dateReceived}</TableCell>
-                <TableCell>
-                  {batch.qtyReceived} / {batch.qtySold} / {batch.qtyReturned}
-                </TableCell>
-                <TableCell>{batch.feePercent}%</TableCell>
-                <TableCell>
-                  <Badge variant={batch.status === "active" ? "default" : "secondary"}>
-                    {batch.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {batch.status === "active" && remaining > 0 && (
-                    <ReturnBatchButton
-                      batchId={batch.id}
-                      consignorId={consignor.id}
-                    />
-                  )}
-                </TableCell>
+      <div className="relative z-10 overflow-hidden rounded-3xl bg-background/95 backdrop-blur-xl shadow-sm ring-1 ring-foreground/5">
+        <div className="border-b border-foreground/5 p-6 md:px-8 md:py-6 bg-primary/[0.02]">
+          <h2 className="text-xl font-bold tracking-tight">Titipan Aktif</h2>
+          <p className="text-sm text-muted-foreground mt-1">Daftar barang titipan yang sedang berjalan dan belum selesai.</p>
+        </div>
+        
+        <div className="overflow-x-auto p-2">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-none hover:bg-transparent">
+                <TableHead className="h-12 px-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">Barang</TableHead>
+                <TableHead className="h-12 px-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">Tanggal Masuk</TableHead>
+                <TableHead className="h-12 px-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">Titip / Laku / Retur</TableHead>
+                <TableHead className="h-12 px-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">Fee</TableHead>
+                <TableHead className="h-12 px-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</TableHead>
+                <TableHead className="h-12 px-6 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground">Aksi</TableHead>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {activeBatches.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-12 text-center">
+                    <p className="text-lg font-bold text-muted-foreground">Belum ada titipan aktif.</p>
+                    <p className="text-sm font-medium text-muted-foreground/70">Tekan "Tambah Titipan" untuk mencatat barang dari penitip ini.</p>
+                  </TableCell>
+                </TableRow>
+              )}
+              {activeBatches.map((batch) => {
+                const remaining = batch.qtyReceived - batch.qtySold - batch.qtyReturned;
+                return (
+                  <TableRow key={batch.id} className="group border-b-foreground/5 hover:bg-primary/[0.03] transition-colors">
+                    <TableCell className="px-6 py-4 font-bold text-[15px]">{batch.productName}</TableCell>
+                    <TableCell className="px-6 py-4 font-medium text-muted-foreground/80">{batch.dateReceived}</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span className="text-foreground">{batch.qtyReceived}</span>
+                        <span className="text-muted-foreground/40">/</span>
+                        <span className="text-primary">{batch.qtySold}</span>
+                        <span className="text-muted-foreground/40">/</span>
+                        <span className="text-destructive">{batch.qtyReturned}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 font-bold text-muted-foreground/80">{batch.feePercent}%</TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Badge className="font-bold tracking-wider uppercase text-[10px] px-2.5 py-1 bg-primary text-primary-foreground hover:bg-primary/90 border-none shadow-sm">
+                        Aktif
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right">
+                      <div className="flex justify-end opacity-100 transition-opacity relative z-20">
+                        {remaining > 0 && (
+                          <ReturnBatchButton
+                            batchId={batch.id}
+                            consignorId={consignor.id}
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {inactiveBatches.length > 0 && (
-        <details className="group [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center gap-2 font-medium text-muted-foreground hover:text-foreground">
-            <span className="transition-transform group-open:rotate-90">
-              ▶
+        <details className="group [&_summary::-webkit-details-marker]:hidden rounded-3xl bg-muted/30 border border-border/40 transition-colors hover:bg-muted/50 overflow-hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-6 font-extrabold tracking-tight text-foreground/80 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+            <span className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm transition-transform group-open:rotate-180">
+                ▼
+              </span>
+              Riwayat Titipan Selesai ({inactiveBatches.length})
             </span>
-            Lihat Riwayat Titipan Selesai ({inactiveBatches.length})
           </summary>
-          <div className="mt-4 rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Barang</TableHead>
-                  <TableHead>Tanggal titip</TableHead>
-                  <TableHead>Titip / Terjual / Retur</TableHead>
-                  <TableHead>Fee</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inactiveBatches.map((batch) => (
-                  <TableRow key={batch.id} className="opacity-70">
-                    <TableCell className="font-medium">{batch.productName}</TableCell>
-                    <TableCell>{batch.dateReceived}</TableCell>
-                    <TableCell>
-                      {batch.qtyReceived} / {batch.qtySold} / {batch.qtyReturned}
-                    </TableCell>
-                    <TableCell>{batch.feePercent}%</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {batch.status === "active" ? "selesai" : batch.status}
-                      </Badge>
-                    </TableCell>
+          <div className="p-2 border-t border-border/40 bg-background/50">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-none hover:bg-transparent">
+                    <TableHead className="h-12 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Barang</TableHead>
+                    <TableHead className="h-12 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tanggal Masuk</TableHead>
+                    <TableHead className="h-12 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Titip / Laku / Retur</TableHead>
+                    <TableHead className="h-12 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Fee</TableHead>
+                    <TableHead className="h-12 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {inactiveBatches.map((batch) => (
+                    <TableRow key={batch.id} className="border-b-foreground/5 opacity-70 hover:opacity-100 transition-opacity">
+                      <TableCell className="px-6 py-3 font-semibold text-sm">{batch.productName}</TableCell>
+                      <TableCell className="px-6 py-3 text-sm text-muted-foreground">{batch.dateReceived}</TableCell>
+                      <TableCell className="px-6 py-3 font-medium text-sm">
+                        {batch.qtyReceived} / {batch.qtySold} / {batch.qtyReturned}
+                      </TableCell>
+                      <TableCell className="px-6 py-3 text-sm">{batch.feePercent}%</TableCell>
+                      <TableCell className="px-6 py-3">
+                        <Badge variant="secondary" className="font-bold tracking-wider uppercase text-[9px] px-2 py-0.5 shadow-none bg-muted-foreground/10 text-muted-foreground border-none">
+                          {batch.status === "active" ? "selesai" : batch.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </details>
       )}
