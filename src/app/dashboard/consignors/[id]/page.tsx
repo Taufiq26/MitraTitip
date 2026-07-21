@@ -18,19 +18,23 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ServerPagination } from "@/components/ui/server-pagination";
 
 export default async function ConsignorDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; activePage?: string; inactivePage?: string; activeLimit?: string; inactiveLimit?: string }>;
 }) {
   const { id } = await params;
-  const { q } = await searchParams;
+  const { q, activePage, inactivePage, activeLimit, inactiveLimit } = await searchParams;
+  const activeCurPage = parseInt(activePage || "1", 10);
+  const inactiveCurPage = parseInt(inactivePage || "1", 10);
+  const ACTIVE_PAGE_SIZE = parseInt(activeLimit || "10", 10);
+  const INACTIVE_PAGE_SIZE = parseInt(inactiveLimit || "10", 10);
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
@@ -63,12 +67,18 @@ export default async function ConsignorDetailPage({
 
   const batches = (batchRows ?? []).map(mapConsignmentBatchRow);
 
-  const activeBatches = batches.filter(
+  const allActiveBatches = batches.filter(
     (b) => b.status === "active" && b.qtyReceived - b.qtySold - b.qtyReturned > 0
   );
-  const inactiveBatches = batches.filter(
+  const allInactiveBatches = batches.filter(
     (b) => b.status !== "active" || b.qtyReceived - b.qtySold - b.qtyReturned <= 0
   );
+
+  const activeTotalPages = Math.ceil(allActiveBatches.length / ACTIVE_PAGE_SIZE) || 1;
+  const inactiveTotalPages = Math.ceil(allInactiveBatches.length / INACTIVE_PAGE_SIZE) || 1;
+
+  const activeBatches = allActiveBatches.slice((activeCurPage - 1) * ACTIVE_PAGE_SIZE, activeCurPage * ACTIVE_PAGE_SIZE);
+  const inactiveBatches = allInactiveBatches.slice((inactiveCurPage - 1) * INACTIVE_PAGE_SIZE, inactiveCurPage * INACTIVE_PAGE_SIZE);
 
   return (
     <div className="relative space-y-8">
@@ -165,6 +175,7 @@ export default async function ConsignorDetailPage({
               })}
             </TableBody>
           </Table>
+          <ServerPagination currentPage={activeCurPage} totalPages={activeTotalPages} paramName="activePage" limitParamName="activeLimit" currentLimit={ACTIVE_PAGE_SIZE} />
         </div>
       </div>
 
@@ -208,6 +219,7 @@ export default async function ConsignorDetailPage({
                   ))}
                 </TableBody>
               </Table>
+              <ServerPagination currentPage={inactiveCurPage} totalPages={inactiveTotalPages} paramName="inactivePage" limitParamName="inactiveLimit" currentLimit={INACTIVE_PAGE_SIZE} />
             </div>
           </div>
         </details>

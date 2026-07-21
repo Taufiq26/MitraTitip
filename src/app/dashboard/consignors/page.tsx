@@ -17,26 +17,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ServerPagination } from "@/components/ui/server-pagination";
 
 export default async function ConsignorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; limit?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, page, limit } = await searchParams;
+  const currentPage = parseInt(page || "1", 10);
+  const PAGE_SIZE = parseInt(limit || "20", 10);
+
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
   const supabase = await createClient();
-  let query = supabase.from("consignors").select("*").order("name");
+  const from = (currentPage - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let query = supabase.from("consignors").select("*", { count: "exact" }).order("name").range(from, to);
 
   if (q) {
     query = query.ilike("name", `%${q}%`);
   }
 
-  const { data } = await query.returns<ConsignorRow[]>();
+  const { data, count } = await query.returns<ConsignorRow[]>();
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
   const consignors = (data ?? []).map(mapConsignorRow);
 
@@ -84,7 +92,7 @@ export default async function ConsignorsPage({
                     <span className="text-[13px] font-medium text-muted-foreground/70">{consignor.phone || "Tidak ada nomor"}</span>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2 opacity-100 transition-opacity relative z-20">
+                    <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity relative z-20">
                       <BatchDialog consignorId={consignor.id} />
                       <ConsignorDialog consignor={consignor} />
                       <DeleteConsignorButton consignorId={consignor.id} />
@@ -94,6 +102,7 @@ export default async function ConsignorsPage({
               ))}
             </TableBody>
           </Table>
+          <ServerPagination currentPage={currentPage} totalPages={totalPages} currentLimit={PAGE_SIZE} />
         </div>
       </div>
     </div>

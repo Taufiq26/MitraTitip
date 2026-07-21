@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ServerPagination } from "@/components/ui/server-pagination";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -25,26 +26,34 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; limit?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, page, limit } = await searchParams;
+  const currentPage = parseInt(page || "1", 10);
+  const PAGE_SIZE = parseInt(limit || "20", 10);
+  
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
   const supabase = await createClient();
+  const from = (currentPage - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
   let query = supabase
     .from("products")
-    .select("*")
+    .select("*", { count: "exact" })
     .or("is_consignment.eq.false,and(is_consignment.eq.true,stock_qty.gt.0)")
-    .order("name");
+    .order("name")
+    .range(from, to);
   
   if (q) {
     query = query.ilike("name", `%${q}%`);
   }
 
-  const { data } = await query.returns<ProductRow[]>();
+  const { data, count } = await query.returns<ProductRow[]>();
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
   const products = (data ?? []).map(mapProductRow);
 
@@ -135,6 +144,7 @@ export default async function ProductsPage({
               })}
             </TableBody>
           </Table>
+          <ServerPagination currentPage={currentPage} totalPages={totalPages} currentLimit={PAGE_SIZE} />
         </div>
       </div>
     </div>

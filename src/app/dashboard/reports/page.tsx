@@ -23,21 +23,27 @@ function firstDayOfMonthIso() {
 export default async function ReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; page?: string; q?: string; limit?: string }>;
 }) {
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
-  const { from, to } = await searchParams;
+  const { from, to, page, q, limit } = await searchParams;
+  const currentPage = parseInt(page || "1", 10);
+  const PAGE_SIZE = parseInt(limit || "20", 10);
+
   const periodStart = from ?? firstDayOfMonthIso();
   const periodEnd = to ?? todayIso();
 
   const supabase = await createClient();
   const report = await computeSalesReport(supabase, periodStart, periodEnd);
 
-  const { data: transactionsData } = await supabase
+  const fromOffset = (currentPage - 1) * PAGE_SIZE;
+  const toOffset = fromOffset + PAGE_SIZE - 1;
+
+  let txQuery = supabase
     .from("transactions")
     .select(`
       id,
@@ -52,10 +58,18 @@ export default async function ReportsPage({
         subtotal,
         products ( name )
       )
-    `)
+    `, { count: "exact" })
     .gte("created_at", `${periodStart}T00:00:00.000Z`)
     .lte("created_at", `${periodEnd}T23:59:59.999Z`)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(fromOffset, toOffset);
+
+  if (q) {
+    txQuery = txQuery.ilike("local_id", `%${q}%`);
+  }
+
+  const { data: transactionsData, count } = await txQuery;
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
   const transactions = (transactionsData ?? []).map((t) => ({
     id: t.id,
@@ -155,7 +169,7 @@ export default async function ReportsPage({
         )}
       </section>
       
-      <TransactionHistory transactions={transactions} />
+      <TransactionHistory transactions={transactions} currentPage={currentPage} totalPages={totalPages} currentLimit={PAGE_SIZE} />
     </div>
   );
 }

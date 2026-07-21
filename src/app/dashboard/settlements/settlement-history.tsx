@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ServerPagination } from "@/components/ui/server-pagination";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -22,7 +23,17 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
-export function SettlementHistory({ settlements }: { settlements: Settlement[] }) {
+export function SettlementHistory({ 
+  settlements,
+  currentPage,
+  totalPages,
+  currentLimit
+}: { 
+  settlements: Settlement[];
+  currentPage: number;
+  totalPages: number;
+  currentLimit: number;
+}) {
   const [selected, setSelected] = useState<Settlement | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -86,6 +97,7 @@ export function SettlementHistory({ settlements }: { settlements: Settlement[] }
               ))}
             </TableBody>
           </Table>
+          <ServerPagination currentPage={currentPage} totalPages={totalPages} currentLimit={currentLimit} />
         </div>
       </div>
       <SettlementReceiptDialog settlement={selected} open={open} onOpenChange={setOpen} />

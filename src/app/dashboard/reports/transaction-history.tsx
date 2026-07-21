@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,6 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { DataTableSearch } from "@/components/ui/data-table-search";
+import { Suspense } from "react";
+import { ServerPagination } from "@/components/ui/server-pagination";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -41,8 +42,17 @@ export type TransactionHistoryItem = {
   }[];
 };
 
-export function TransactionHistory({ transactions }: { transactions: TransactionHistoryItem[] }) {
-  const [search, setSearch] = useState("");
+export function TransactionHistory({ 
+  transactions,
+  currentPage,
+  totalPages,
+  currentLimit
+}: { 
+  transactions: TransactionHistoryItem[];
+  currentPage: number;
+  totalPages: number;
+  currentLimit: number;
+}) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const toggleRow = (id: string) => {
@@ -57,19 +67,6 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
     });
   };
 
-  const debouncedSearch = useDebounce(search, 300);
-
-  const filteredTransactions = React.useMemo(() => {
-    return transactions.filter((t) => {
-      if (!debouncedSearch) return true;
-      const lowerSearch = debouncedSearch.toLowerCase();
-      return (
-        t.localId.toLowerCase().includes(lowerSearch) ||
-        (t.cashierName && t.cashierName.toLowerCase().includes(lowerSearch))
-      );
-    });
-  }, [transactions, debouncedSearch]);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
@@ -77,16 +74,9 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Riwayat Transaksi</h2>
           <p className="text-muted-foreground mt-1 text-base">Daftar transaksi pada periode ini.</p>
         </div>
-        <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Cari ID Transaksi atau kasir..."
-            className="pl-10 h-11 rounded-lg bg-background shadow-sm"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <Suspense fallback={<div className="w-full sm:max-w-sm h-11 bg-muted rounded-lg animate-pulse" />}>
+          <DataTableSearch placeholder="Cari ID Transaksi..." />
+        </Suspense>
       </div>
 
       <div className="rounded-xl border bg-background overflow-hidden shadow-sm">
@@ -101,14 +91,14 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTransactions.length === 0 && (
+            {transactions.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground h-24">
                   Tidak ada transaksi ditemukan.
                 </TableCell>
               </TableRow>
             )}
-            {filteredTransactions.map((t) => (
+            {transactions.map((t) => (
               <React.Fragment key={t.id}>
                 <TableRow
                   className={`cursor-pointer transition-colors ${expandedRows.has(t.id) ? 'bg-muted/10' : 'hover:bg-muted/30'}`}
@@ -180,6 +170,7 @@ export function TransactionHistory({ transactions }: { transactions: Transaction
             ))}
           </TableBody>
         </Table>
+        <ServerPagination currentPage={currentPage} totalPages={totalPages} currentLimit={currentLimit} />
       </div>
     </div>
   );

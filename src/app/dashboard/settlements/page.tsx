@@ -9,14 +9,17 @@ import { SettlementHistory } from "./settlement-history";
 export default async function SettlementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ consignorId?: string; q?: string }>;
+  searchParams: Promise<{ consignorId?: string; q?: string; page?: string; limit?: string }>;
 }) {
   const profile = await getCurrentProfile();
   if (profile.role !== "admin") {
     redirect("/dashboard");
   }
 
-  const { consignorId, q } = await searchParams;
+  const { consignorId, q, page, limit } = await searchParams;
+  const currentPage = parseInt(page || "1", 10);
+  const PAGE_SIZE = parseInt(limit || "20", 10);
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("consignors")
@@ -26,16 +29,21 @@ export default async function SettlementsPage({
 
   const consignors = (data ?? []).map(mapConsignorRow);
 
+  const from = (currentPage - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
   let settlementQuery = supabase
     .from("settlements")
-    .select("*, consignors!inner(name)")
-    .order("created_at", { ascending: false });
+    .select("*, consignors!inner(name)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (q) {
     settlementQuery = settlementQuery.ilike("consignors.name", `%${q}%`);
   }
 
-  const { data: settlementRows } = await settlementQuery.returns<SettlementRow[]>();
+  const { data: settlementRows, count } = await settlementQuery.returns<SettlementRow[]>();
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 
   const settlements = (settlementRows ?? []).map(mapSettlementRow);
 
@@ -51,7 +59,7 @@ export default async function SettlementsPage({
       </div>
       
       <SettlementForm consignors={consignors} defaultConsignorId={consignorId} />
-      <SettlementHistory settlements={settlements} />
+      <SettlementHistory settlements={settlements} currentPage={currentPage} totalPages={totalPages} currentLimit={PAGE_SIZE} />
     </div>
   );
 }
