@@ -8,6 +8,7 @@ import {
 } from "./actions";
 import type { Consignor } from "@/lib/types/consignor";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -110,11 +111,21 @@ export function SettlementForm({
 
       {state.preview && (
         <Card>
-          <CardHeader>
-            <CardTitle>Preview Settlement</CardTitle>
-            <CardDescription>
-              Periode {periodStart} &ndash; {periodEnd}
-            </CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+            <div className="space-y-1">
+              <CardTitle>Preview Settlement</CardTitle>
+              <CardDescription>
+                Periode {periodStart} &ndash; {periodEnd}
+              </CardDescription>
+            </div>
+            {state.preview.isRealized && (
+              <Badge 
+                variant="outline" 
+                className="whitespace-nowrap bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50"
+              >
+                Sudah direalisasi
+              </Badge>
+            )}
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -134,7 +145,7 @@ export function SettlementForm({
             )}
             <Button
               className="w-full"
-              disabled={finalized}
+              disabled={finalized || state.preview.isRealized}
               onClick={async () => {
                 const result = await finalizeSettlement(
                   consignorId,
@@ -149,7 +160,7 @@ export function SettlementForm({
                 }
               }}
             >
-              {finalized ? "Tersimpan" : "Finalisasi & Simpan"}
+              {finalized || state.preview.isRealized ? "Sudah direalisasi" : "Finalisasi & Simpan"}
             </Button>
           </CardContent>
         </Card>

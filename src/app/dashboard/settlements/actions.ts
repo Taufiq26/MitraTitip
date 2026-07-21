@@ -14,6 +14,7 @@ export type SettlementPreview = {
   totalSales: number;
   totalFee: number;
   totalPayout: number;
+  isRealized?: boolean;
 };
 
 export type SettlementPreviewState = {
@@ -59,12 +60,24 @@ export async function previewSettlement(
     total_payout: number;
   };
 
+  const { data: existingSettlement } = await supabase
+    .from("settlements")
+    .select("id")
+    .eq("consignor_id", parsed.data.consignorId)
+    .eq("period_start", parsed.data.periodStart)
+    .eq("period_end", parsed.data.periodEnd)
+    .limit(1)
+    .maybeSingle();
+
+  const isRealized = !!existingSettlement;
+
   return {
     error: null,
     preview: {
       totalSales: row.total_sales,
       totalFee: row.total_fee,
       totalPayout: row.total_payout,
+      isRealized,
     },
   };
 }
