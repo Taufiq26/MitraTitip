@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "./button";
+import { Button, buttonVariants } from "./button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
+import { cn } from "@/lib/utils";
 
 export function ServerPagination({
   currentPage,
@@ -28,7 +29,8 @@ export function ServerPagination({
     return `${pathname}?${params.toString()}`;
   };
 
-  const onLimitChange = (value: string) => {
+  const onLimitChange = (value: string | null) => {
+    if (!value) return;
     const params = new URLSearchParams(searchParams);
     params.set(limitParamName, value);
     params.set(paramName, "1");
@@ -76,32 +78,25 @@ export function ServerPagination({
         </div>
       </div>
       <div className="flex items-center space-x-1 sm:space-x-2 w-full sm:w-auto justify-end flex-wrap gap-y-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:flex"
-          disabled={currentPage <= 1}
-          asChild={currentPage > 1}
-        >
-          {currentPage > 1 ? (
-            <Link href={createPageUrl(1)} scroll={false}>Awal</Link>
-          ) : (
-            <span>Awal</span>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-8 h-8 sm:w-9 sm:h-9"
-          disabled={currentPage <= 1}
-          asChild={currentPage > 1}
-        >
-          {currentPage > 1 ? (
-            <Link href={createPageUrl(currentPage - 1)} scroll={false}>&lsaquo;</Link>
-          ) : (
-            <span>&lsaquo;</span>
-          )}
-        </Button>
+        {currentPage > 1 ? (
+          <Link href={createPageUrl(1)} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:flex")}>
+            Awal
+          </Link>
+        ) : (
+          <Button variant="outline" size="sm" className="hidden sm:flex" disabled>
+            Awal
+          </Button>
+        )}
+        
+        {currentPage > 1 ? (
+          <Link href={createPageUrl(currentPage - 1)} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "w-8 h-8 sm:w-9 sm:h-9")}>
+            &lsaquo;
+          </Link>
+        ) : (
+          <Button variant="outline" size="icon" className="w-8 h-8 sm:w-9 sm:h-9" disabled>
+            &lsaquo;
+          </Button>
+        )}
 
         {getPageNumbers().map((p, i) => {
           if (p === "...") {
@@ -111,49 +106,36 @@ export function ServerPagination({
               </span>
             );
           }
-          return (
-            <Button
-              key={i}
-              variant={currentPage === p ? "default" : "outline"}
-              size="icon"
-              className={`w-8 h-8 sm:w-9 sm:h-9 ${currentPage === p ? "font-bold" : ""}`}
-              asChild={currentPage !== p}
-            >
-              {currentPage !== p ? (
-                <Link href={createPageUrl(p as number)} scroll={false}>{p}</Link>
-              ) : (
-                <span>{p}</span>
-              )}
+          return currentPage !== p ? (
+            <Link key={i} href={createPageUrl(p as number)} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "w-8 h-8 sm:w-9 sm:h-9")}>
+              {p}
+            </Link>
+          ) : (
+            <Button key={i} variant="default" size="icon" className="w-8 h-8 sm:w-9 sm:h-9 font-bold" disabled>
+              {p}
             </Button>
           );
         })}
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-8 h-8 sm:w-9 sm:h-9"
-          disabled={currentPage >= totalPages}
-          asChild={currentPage < totalPages}
-        >
-          {currentPage < totalPages ? (
-            <Link href={createPageUrl(currentPage + 1)} scroll={false}>&rsaquo;</Link>
-          ) : (
-            <span>&rsaquo;</span>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden sm:flex"
-          disabled={currentPage >= totalPages}
-          asChild={currentPage < totalPages}
-        >
-          {currentPage < totalPages ? (
-            <Link href={createPageUrl(totalPages)} scroll={false}>Akhir</Link>
-          ) : (
-            <span>Akhir</span>
-          )}
-        </Button>
+        {currentPage < totalPages ? (
+          <Link href={createPageUrl(currentPage + 1)} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "icon" }), "w-8 h-8 sm:w-9 sm:h-9")}>
+            &rsaquo;
+          </Link>
+        ) : (
+          <Button variant="outline" size="icon" className="w-8 h-8 sm:w-9 sm:h-9" disabled>
+            &rsaquo;
+          </Button>
+        )}
+        
+        {currentPage < totalPages ? (
+          <Link href={createPageUrl(totalPages)} scroll={false} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden sm:flex")}>
+            Akhir
+          </Link>
+        ) : (
+          <Button variant="outline" size="sm" className="hidden sm:flex" disabled>
+            Akhir
+          </Button>
+        )}
       </div>
     </div>
   );

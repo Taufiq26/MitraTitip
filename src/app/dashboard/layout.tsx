@@ -2,18 +2,7 @@ import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { logout } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
-
-const BASE_NAV = [
-  { href: "/dashboard", label: "Ringkasan" },
-  { href: "/dashboard/pos", label: "Kasir" },
-];
-
-const ADMIN_NAV = [
-  { href: "/dashboard/products", label: "Barang" },
-  { href: "/dashboard/consignors", label: "Penitip" },
-  { href: "/dashboard/settlements", label: "Settlement" },
-  { href: "/dashboard/reports", label: "Laporan" },
-];
+import { MainNav } from "./main-nav";
 
 export default async function DashboardLayout({
   children,
@@ -44,19 +33,7 @@ export default async function DashboardLayout({
         </div>
         
         {/* Navigation (Center) */}
-        <nav className="hidden items-center justify-center gap-8 lg:flex">
-          {[...BASE_NAV, ...(profile.role === "admin" ? ADMIN_NAV : [])].map(
-            (item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {item.label}
-              </Link>
-            ),
-          )}
-        </nav>
+        <MainNav role={profile.role} />
 
         {/* Actions (Right) */}
         <div className="flex flex-1 items-center justify-end">

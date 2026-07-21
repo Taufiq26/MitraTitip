@@ -18,6 +18,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { ServerPagination } from "@/components/ui/server-pagination";
