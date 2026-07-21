@@ -33,9 +33,6 @@ export default async function ProductsPage({
   const PAGE_SIZE = parseInt(limit || "20", 10);
   
   const profile = await getCurrentProfile();
-  if (profile.role !== "admin") {
-    redirect("/dashboard");
-  }
 
   const supabase = await createClient();
   const from = (currentPage - 1) * PAGE_SIZE;
@@ -64,7 +61,7 @@ export default async function ProductsPage({
           <h1 className="text-4xl font-extrabold tracking-tight">Katalog Barang</h1>
           <p className="text-base font-medium text-muted-foreground">Kelola daftar harga dan lacak stok barang toko.</p>
         </div>
-        <ProductDialog />
+        {profile.role === "admin" && <ProductDialog />}
       </div>
 
       <div className="relative z-10 overflow-hidden rounded-3xl bg-background/95 backdrop-blur-xl shadow-sm ring-1 ring-foreground/5">
@@ -135,8 +132,12 @@ export default async function ProductsPage({
                     </TableCell>
                     <TableCell className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2 opacity-100 transition-opacity relative z-20">
-                        <ProductDialog product={product} />
-                        <DeleteProductButton productId={product.id} />
+                        {profile.role === "admin" && (
+                          <>
+                            <ProductDialog product={product} />
+                            <DeleteProductButton productId={product.id} />
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

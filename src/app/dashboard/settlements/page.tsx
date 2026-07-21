@@ -12,9 +12,6 @@ export default async function SettlementsPage({
   searchParams: Promise<{ consignorId?: string; q?: string; page?: string; limit?: string }>;
 }) {
   const profile = await getCurrentProfile();
-  if (profile.role !== "admin") {
-    redirect("/dashboard");
-  }
 
   const { consignorId, q, page, limit } = await searchParams;
   const currentPage = parseInt(page || "1", 10);

@@ -37,9 +37,6 @@ export default async function ConsignorDetailPage({
   const ACTIVE_PAGE_SIZE = parseInt(activeLimit || "10", 10);
   const INACTIVE_PAGE_SIZE = parseInt(inactiveLimit || "10", 10);
   const profile = await getCurrentProfile();
-  if (profile.role !== "admin") {
-    redirect("/dashboard");
-  }
 
   const supabase = await createClient();
   const { data: consignorRow } = await supabase

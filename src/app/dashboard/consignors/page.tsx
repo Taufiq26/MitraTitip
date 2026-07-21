@@ -29,9 +29,6 @@ export default async function ConsignorsPage({
   const PAGE_SIZE = parseInt(limit || "20", 10);
 
   const profile = await getCurrentProfile();
-  if (profile.role !== "admin") {
-    redirect("/dashboard");
-  }
 
   const supabase = await createClient();
   const from = (currentPage - 1) * PAGE_SIZE;
@@ -55,7 +52,7 @@ export default async function ConsignorsPage({
           <h1 className="text-4xl font-extrabold tracking-tight">Daftar Penitip</h1>
           <p className="text-base font-medium text-muted-foreground">Kelola mitra penitip (consignors) dan riwayat titipan mereka.</p>
         </div>
-        <ConsignorDialog />
+        {profile.role === "admin" && <ConsignorDialog />}
       </div>
 
       <div className="relative z-10 overflow-hidden rounded-3xl bg-background/95 backdrop-blur-xl shadow-sm ring-1 ring-foreground/5">
@@ -94,8 +91,12 @@ export default async function ConsignorsPage({
                   <TableCell className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity relative z-20">
                       <BatchDialog consignorId={consignor.id} />
-                      <ConsignorDialog consignor={consignor} />
-                      <DeleteConsignorButton consignorId={consignor.id} />
+                      {profile.role === "admin" && (
+                        <>
+                          <ConsignorDialog consignor={consignor} />
+                          <DeleteConsignorButton consignorId={consignor.id} />
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </ClickableTableRow>

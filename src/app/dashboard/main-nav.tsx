@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 const BASE_NAV = [
   { href: "/dashboard", label: "Ringkasan" },
   { href: "/dashboard/pos", label: "Kasir" },
-];
-
-const ADMIN_NAV = [
   { href: "/dashboard/products", label: "Barang" },
   { href: "/dashboard/consignors", label: "Penitip" },
   { href: "/dashboard/settlements", label: "Settlement" },
+];
+
+const ADMIN_NAV = [
   { href: "/dashboard/reports", label: "Laporan" },
+  { href: "/dashboard/users", label: "Pengguna" },
 ];
 
 export function MainNav({ role }: { role: string }) {
