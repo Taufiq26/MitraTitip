@@ -17,7 +17,7 @@
 | 7 | Peningkatan Kasir, Penitip & Integritas Data | done | |
 | 8 | Registrasi WA, Verifikasi Email & Fondasi Billing | done | |
 | 9 | Perhitungan Tagihan & Pembatasan Akses | done | |
-| 10 | Integrasi Pembayaran Midtrans | pending | |
+| 10 | Integrasi Pembayaran Midtrans | done | |
 | 11 | Panel Super Admin — Billing | pending | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
@@ -121,15 +121,15 @@
 - [x] 9.3 Status dihitung live (`src/lib/billing/subscription-status.ts`): trial → active → grace → suspended berdasarkan `trial_end` + invoice terbaru; invoice unpaid disapu jadi overdue tiap run cron; `subscriptions.status` disinkron sebagai cache
 - [x] 9.4 Guard di `src/app/dashboard/pos/layout.tsx` (bukan middleware/proxy global — menghindari query auth berulang per navigasi): redirect ke `/dashboard/billing` saat status `suspended`; rute laporan & riwayat tidak disentuh, tetap read-only
 
-## Phase 10 — Integrasi Pembayaran Midtrans `[pending]`
+## Phase 10 — Integrasi Pembayaran Midtrans `[done]`
 
 **Goal:** Tenant dapat membayar tagihan langsung lewat Midtrans dan melihat status/riwayat pembayarannya sendiri.
 **Depends on:** Phase 9
 
-- [ ] 10.1 Setup Midtrans SDK (sandbox key via env var `MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY`)
-- [ ] 10.2 Endpoint `POST /api/tenant/billing/:invoiceId/pay`: create Snap transaction, simpan `midtrans_order_id`
-- [ ] 10.3 Endpoint `POST /api/billing/webhook/midtrans`: verifikasi signature, update status invoice & subscription secara idempotent berdasarkan `order_id`
-- [ ] 10.4 Halaman dashboard tagihan tenant (`/dashboard/billing`): tagihan berjalan + tombol bayar, riwayat pembayaran dengan status
+- [x] 10.1 Integrasi Midtrans via REST API langsung (tanpa SDK tambahan, konsisten dengan pola Mailgun) — `src/lib/billing/midtrans.ts`, env var `MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY`/`MIDTRANS_IS_PRODUCTION`
+- [x] 10.2 Endpoint `POST /api/tenant/billing/:invoiceId/pay`: create Snap transaction, simpan `midtrans_order_id`, verifikasi kepemilikan invoice ke tenant yang login
+- [x] 10.3 Endpoint `POST /api/billing/webhook/midtrans`: verifikasi signature (`src/lib/billing/midtrans-signature.ts`), update status invoice & subscription idempotent berdasarkan `order_id`
+- [x] 10.4 Halaman dashboard tagihan tenant (`/dashboard/billing`) lengkap: tagihan berjalan + tombol bayar (Snap.js), riwayat tagihan dengan status; link "Tagihan" ditambah ke nav admin
 
 ## Phase 11 — Panel Super Admin — Billing `[pending]`
 
