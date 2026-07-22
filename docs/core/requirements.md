@@ -9,8 +9,8 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 <!-- Siapa saja pengguna aplikasi ini, dan kebutuhan masing-masing. -->
 | Tipe pengguna | Kebutuhan |
 |---|---|
-| Super Admin (pemilik platform) | Memantau daftar tenant yang terdaftar lewat panel khusus |
-| Admin/Pemilik (per tenant) | Kelola barang, stok, barang titipan, penitip, lihat laporan & insight, kelola akun kasir |
+| Super Admin (pemilik platform) | Memantau daftar tenant yang terdaftar lewat panel khusus; kelola persentase fee billing & status pembayaran per tenant; lihat laporan piutang platform |
+| Admin/Pemilik (per tenant) | Kelola barang, stok, barang titipan, penitip, lihat laporan & insight, kelola akun kasir; lihat & bayar tagihan platform |
 | Kasir (per tenant) | Melakukan transaksi penjualan, scan barcode, memilih metode pembayaran, preview/cetak struk |
 
 ## Functional requirements
@@ -40,6 +40,15 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 - **FR-20** — Aplikasi dapat digunakan secara offline; transaksi penjualan tetap dapat dilakukan tanpa koneksi internet
 - **FR-21** — Sistem melakukan sinkronisasi otomatis data transaksi dan perubahan lain ke Supabase begitu koneksi internet tersedia kembali
 - **FR-22** — Data antar tenant terisolasi sepenuhnya; satu tenant tidak dapat mengakses atau melihat data tenant lain
+- **FR-23** — Pendaftaran tenant baru wajib mengisi nomor WhatsApp (untuk follow-up manual oleh platform) dan memverifikasi alamat email lewat tautan konfirmasi (dikirim via layanan email pihak ketiga) sebelum akun dapat digunakan
+- **FR-24** — Setiap tenant mendapat trial gratis 1 bulan sejak tanggal pendaftaran, tanpa tagihan selama periode ini
+- **FR-25** — Setelah trial berakhir, sistem menghasilkan tagihan bulanan otomatis sebesar persentase (default 2%, dapat diubah per tenant oleh Super Admin untuk negosiasi) dari **pendapatan bersih** toko pada periode tersebut — didefinisikan sebagai margin barang non-konsinyasi (harga jual dikurangi harga modal) ditambah bagian fee konsinyasi milik toko (`total_fee` pada settlement), **bukan** dari total omzet transaksi mentah
+- **FR-26** — Jika tagihan tidak dibayar sampai jatuh tempo ditambah masa tenggang (grace period, dapat dikonfigurasi), sistem membatasi akses fitur transaksi (Kasir/POS) untuk Admin & Kasir tenant tersebut; data historis (laporan, riwayat transaksi & settlement) tetap dapat diakses secara read-only
+- **FR-27** — Admin tenant dapat menyelesaikan pembayaran tagihan melalui Midtrans; status tagihan diperbarui otomatis lewat notifikasi webhook Midtrans
+- **FR-28** — Admin tenant dapat melihat halaman tagihan (billing) berisi tagihan berjalan, riwayat pembayaran, dan status masing-masing
+- **FR-29** — Super Admin dapat melihat dan mengubah persentase fee khusus per tenant (override dari nilai default)
+- **FR-30** — Super Admin dapat menandai status pembayaran tenant secara manual per periode tagihan, sebagai fallback jika ada kesepakatan/pembayaran di luar sistem
+- **FR-31** — Super Admin dapat melihat laporan analisa pendapatan bersih seluruh tenant, nilai tagihan yang seharusnya dibayarkan, dan status piutang platform secara keseluruhan
 
 ## Non-functional requirements
 
@@ -49,11 +58,14 @@ MitraTitip adalah aplikasi kasir (POS) berbasis web multi-tenant yang ditujukan 
 - **NFR-4** — Performance: pencarian barang via scan barcode merespons dalam < 300ms agar alur kasir tetap cepat
 - **NFR-5** — Compatibility: aplikasi berjalan baik di browser desktop (laptop) maupun tablet layar sentuh
 - **NFR-6** — Performance: perpindahan antar halaman dashboard tidak boleh terasa freeze; hindari pengecekan autentikasi berulang per navigasi dan tampilkan feedback loading instan
+- **NFR-7** — Security: kredensial pihak ketiga (Midtrans, Mailgun) disimpan sebagai environment variable, tidak pernah hardcoded; setiap notifikasi webhook Midtrans diverifikasi signature-nya sebelum status tagihan diproses
+- **NFR-8** — Reliability: pembatasan akses akibat tagihan menunggak tidak boleh menghapus atau mengunci data historis tenant — hanya membatasi aksi transaksi baru (Kasir/POS)
 
 ## Out of scope
 
 - Multi-cabang/multi-lokasi dalam satu tenant (saat ini 1 tenant = 1 toko/kantin)
-- Integrasi payment gateway aktif (QRIS/transfer hanya dicatat manual, bukan diproses/diverifikasi otomatis)
+- Integrasi payment gateway untuk transaksi Kasir/POS (metode QRIS/transfer pada transaksi penjualan tenant tetap dicatat manual, bukan diproses/diverifikasi otomatis) — Midtrans pada fase ini **hanya** dipakai untuk pembayaran tagihan platform ke tenant, bukan transaksi jual-beli tenant ke pembeli
 - Integrasi printer termal aktif (hanya format struk yang disiapkan, implementasi integrasi ditunda)
-- Manajemen tenant lanjutan oleh Super Admin (suspend, edit paket, dsb) di luar monitoring daftar tenant
+- Manajemen tenant lanjutan di luar konteks billing (mis. suspend manual tanpa alasan tagihan, paket/tier berjenjang selain persentase fee) — restriksi akses otomatis berbasis status tagihan termasuk dalam scope, di luar itu tidak
 - Aplikasi native mobile (Android/iOS) — hanya web app/PWA yang diakses lewat browser
+- Verifikasi nomor WhatsApp otomatis (OTP) — nomor WA hanya dikumpulkan sebagai data kontak untuk follow-up manual, karena API WA resmi berbayar

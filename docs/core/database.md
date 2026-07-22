@@ -15,10 +15,13 @@ erDiagram
     PRODUCTS ||--o{ TRANSACTION_ITEMS : "sold as"
     CONSIGNMENT_BATCHES ||--o{ TRANSACTION_ITEMS : "sold from"
     CONSIGNORS ||--o{ SETTLEMENTS : "paid via"
+    TENANTS ||--o| SUBSCRIPTIONS : has
+    TENANTS ||--o{ INVOICES : billed
 
     TENANTS {
         uuid id PK
         text name
+        text whatsapp_number
         timestamptz created_at
     }
     PROFILES {
@@ -26,6 +29,9 @@ erDiagram
         uuid tenant_id FK
         text role
         text full_name
+        text email_verification_token
+        timestamptz email_verification_sent_at
+        timestamptz email_verified_at
         timestamptz created_at
     }
     PRODUCTS {
@@ -96,6 +102,31 @@ erDiagram
         text status
         timestamptz created_at
     }
+    SUBSCRIPTIONS {
+        uuid id PK
+        uuid tenant_id FK
+        numeric fee_percent
+        date trial_end
+        text status
+        timestamptz created_at
+    }
+    INVOICES {
+        uuid id PK
+        uuid tenant_id FK
+        date period_start
+        date period_end
+        numeric net_revenue
+        numeric fee_percent_snapshot
+        numeric amount_due
+        date due_date
+        date grace_end
+        text status
+        timestamptz paid_at
+        text midtrans_order_id
+        text midtrans_transaction_id
+        uuid marked_paid_by FK
+        timestamptz created_at
+    }
 ```
 
 ## Tables
@@ -106,6 +137,7 @@ erDiagram
 |---|---|---|---|
 | id | uuid | PK, default gen_random_uuid() | |
 | name | text | not null | Nama toko/kantin |
+| whatsapp_number | text | not null | Kontak follow-up manual platform, diisi wajib saat registrasi |
 | created_at | timestamptz | not null, default now() | |
 
 ### profiles
@@ -116,6 +148,9 @@ erDiagram
 | tenant_id | uuid | FK → tenants.id, nullable | null untuk role `super_admin` |
 | role | text | not null, check in (super_admin, admin, kasir) | |
 | full_name | text | not null | |
+| email_verification_token | text | nullable, unique | Token acak untuk tautan verifikasi email, dihapus/null-kan setelah dipakai |
+| email_verification_sent_at | timestamptz | nullable | Untuk throttle kirim ulang email verifikasi |
+| email_verified_at | timestamptz | nullable | null = belum verifikasi; akun admin tidak dapat login penuh sebelum terisi |
 | created_at | timestamptz | not null, default now() | |
 
 ### products
@@ -203,6 +238,36 @@ erDiagram
 | status | text | not null, check in (draft, paid) | draft = preview, belum final |
 | created_at | timestamptz | not null, default now() | |
 
+### subscriptions
+
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| id | uuid | PK, default gen_random_uuid() | |
+| tenant_id | uuid | FK → tenants.id, not null, unique | 1 tenant = 1 baris subscription |
+| fee_percent | numeric | not null, default 2 | Override per tenant hasil negosiasi Super Admin; default 2% dari pendapatan bersih |
+| trial_end | date | not null | `created_at` tenant + 1 bulan, dihitung sekali saat registrasi |
+| status | text | not null, check in (trial, active, grace, suspended), default 'trial' | `active` = tagihan lunas/berjalan, `grace` = lewat jatuh tempo tapi masih masa tenggang, `suspended` = akses POS dibatasi |
+| created_at | timestamptz | not null, default now() | |
+
+### invoices
+
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| id | uuid | PK, default gen_random_uuid() | |
+| tenant_id | uuid | FK → tenants.id, not null | |
+| period_start / period_end | date | not null | Periode tagihan bulanan |
+| net_revenue | numeric | not null | Snapshot hasil agregasi margin non-konsinyasi (`transaction_items`) + `total_fee` (`settlements`) pada periode ini |
+| fee_percent_snapshot | numeric | not null | Salinan `subscriptions.fee_percent` saat invoice dibuat, agar perubahan fee di masa depan tidak mengubah tagihan lama |
+| amount_due | numeric | not null | `net_revenue * fee_percent_snapshot / 100` |
+| due_date | date | not null | `period_end` + N hari (dikonfigurasi) |
+| grace_end | date | not null | `due_date` + masa tenggang |
+| status | text | not null, check in (draft, unpaid, paid, overdue, manual_paid), default 'draft' | `manual_paid` = ditandai lunas manual oleh Super Admin di luar Midtrans |
+| paid_at | timestamptz | nullable | |
+| midtrans_order_id | text | nullable, unique | Dikirim ke Midtrans saat create transaction |
+| midtrans_transaction_id | text | nullable | Diisi dari payload webhook |
+| marked_paid_by | uuid | FK → profiles.id, nullable | Diisi jika status `manual_paid` |
+| created_at | timestamptz | not null, default now() | |
+
 ## Migration log
 
 <!-- Append-only. Setiap perubahan skema dicatat, ditautkan ke fitur/phase penyebabnya. -->
@@ -210,3 +275,4 @@ erDiagram
 |---|---|---|---|
 | 2026-07-16 | Skema awal: tenants, profiles, products, consignors, consignment_batches, transactions, transaction_items, settlements | init | 1 |
 | 2026-07-17 | `transaction_items.product_id` & `consignment_batch_id`: ubah FK jadi `on delete set null` (kolom jadi nullable) agar riwayat transaksi tetap tersimpan saat barang/batch titipan dihapus, dan cascade delete tenant tidak lagi gagal karena urutan FK (BL-1) | BL-1 | 7 |
+| 2026-07-23 | Tambah `tenants.whatsapp_number`; tambah `profiles.email_verification_token`/`email_verification_sent_at`/`email_verified_at`; tabel baru `subscriptions` & `invoices` untuk billing berbasis persentase pendapatan bersih | Billing & Subscription | 8 |

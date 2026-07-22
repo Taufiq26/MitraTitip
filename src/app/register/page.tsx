@@ -18,14 +18,16 @@ export default function RegisterPage() {
     setIsPending(true);
 
     const formData = new FormData(event.currentTarget);
+    const adminEmail = String(formData.get("admin_email") ?? "");
     const res = await fetch("/api/tenants/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tenant_name: formData.get("tenant_name"),
-        admin_email: formData.get("admin_email"),
+        admin_email: adminEmail,
         admin_password: formData.get("admin_password"),
         admin_name: formData.get("admin_name"),
+        whatsapp_number: formData.get("whatsapp_number"),
       }),
     });
     const json = await res.json();
@@ -36,7 +38,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/login");
+    router.push(`/register/check-email?email=${encodeURIComponent(adminEmail)}`);
   }
 
   return (
@@ -88,6 +90,19 @@ export default function RegisterPage() {
                 required 
                 className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp_number" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nomor WhatsApp</Label>
+              <Input
+                id="whatsapp_number"
+                name="whatsapp_number"
+                type="tel"
+                autoComplete="tel"
+                placeholder="081234567890"
+                required
+                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
+              />
+              <p className="text-xs text-muted-foreground">Dipakai tim kami untuk follow-up terkait akun Anda.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="admin_email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</Label>

@@ -77,13 +77,30 @@
 |---|---|---|---|---|---|---|---|---|
 | Perbaikan performa navigasi | Hilangkan auth check ganda (middleware+layout), tambah loading.tsx per rute | should | 1.5 | 0.5 | 0 | 0.5 | 0 | 2.5 |
 
+## Module: Billing & Subscription (Phase 8-11)
+
+| Feature | Description | Priority | FE md | BE md | UI/UX md | QA md | DevOps md | Total |
+|---|---|---|---|---|---|---|---|---|
+| Field WA wajib saat registrasi | Nomor WhatsApp untuk follow-up manual platform | must | 0.5 | 0.5 | 0 | 0.5 | 0 | 1.5 |
+| Verifikasi email registrasi | Kirim & validasi token via Mailgun, blokir login penuh sebelum verifikasi | must | 1 | 2 | 0.5 | 1 | 0.5 | 5 |
+| Skema subscription & trial otomatis | Tabel `subscriptions`/`invoices`, trial 1 bulan otomatis saat registrasi | must | 0 | 3 | 0 | 1 | 0 | 4 |
+| Generate tagihan bulanan | Hitung pendapatan bersih (margin + fee konsinyasi) per periode, buat invoice | must | 0 | 3 | 0 | 1.5 | 0 | 4.5 |
+| Due date & grace period | Tracking jatuh tempo, transisi status invoice otomatis | must | 0 | 1.5 | 0 | 1 | 0 | 2.5 |
+| Pembatasan akses POS | Guard akses Kasir/POS saat grace period habis, laporan tetap read-only | must | 1 | 1.5 | 0 | 1 | 0 | 3.5 |
+| Integrasi Midtrans Snap | Create transaction dari invoice + redirect pembayaran | must | 0 | 2 | 0 | 1 | 0.5 | 3.5 |
+| Webhook notifikasi Midtrans | Verifikasi signature, update status invoice idempotent | must | 0 | 2 | 0 | 1 | 0.5 | 3.5 |
+| Dashboard tagihan tenant | Halaman billing Admin: tagihan berjalan, riwayat, status, tombol bayar | must | 2.5 | 0.5 | 1 | 1 | 0 | 5 |
+| Super Admin: edit fee % per tenant | Lihat & ubah persentase fee untuk negosiasi | must | 1.5 | 1 | 0.5 | 0.5 | 0 | 3.5 |
+| Super Admin: flag pembayaran manual | Tandai invoice lunas di luar sistem Midtrans | should | 1 | 1 | 0.5 | 0.5 | 0 | 3 |
+| Super Admin: laporan piutang platform | Analisa pendapatan bersih semua tenant vs tagihan seharusnya | must | 2 | 2 | 0.5 | 1 | 0 | 5.5 |
+
 ## Totals
 
 | Division | Total mandays |
 |---|---|
-| Frontend | 51.5 |
-| Backend | 44.5 |
-| UI/UX | 21 |
-| QA | 31 |
-| DevOps | 7 |
-| **Grand total** | **155** |
+| Frontend | 61 |
+| Backend | 64.5 |
+| UI/UX | 24 |
+| QA | 42 |
+| DevOps | 8.5 |
+| **Grand total** | **200** |

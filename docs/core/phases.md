@@ -15,6 +15,10 @@
 | 5 | Laporan & Insight | done | |
 | 6 | Panel Super Admin & Hardening | done | |
 | 7 | Peningkatan Kasir, Penitip & Integritas Data | done | |
+| 8 | Registrasi WA, Verifikasi Email & Fondasi Billing | done | |
+| 9 | Perhitungan Tagihan & Pembatasan Akses | pending | |
+| 10 | Integrasi Pembayaran Midtrans | pending | |
+| 11 | Panel Super Admin — Billing | pending | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
 
@@ -94,3 +98,45 @@
 - [x] 7.3 Perbaikan performa navigasi: hilangkan auth check ganda (middleware + layout), tambah `loading.tsx` per rute dashboard
 - [x] 7.4 Quick-add titipan langsung di baris tabel Penitip (reuse `BatchDialog`)
 - [x] 7.5 Halaman riwayat settlement dengan badge status "Sudah Direalisasi" + lihat/cetak ulang struk
+
+## Phase 8 — Registrasi WA, Verifikasi Email & Fondasi Billing `[done]`
+
+**Goal:** Registrasi tenant mengumpulkan nomor WA & memverifikasi email sebelum akun aktif; skema database subscription/invoice siap dengan trial otomatis 1 bulan.
+**Depends on:** Phase 7
+
+- [x] 8.1 Migration: tambah `tenants.whatsapp_number` (not null), `profiles.email_verification_token`/`email_verification_sent_at`/`email_verified_at`
+- [x] 8.2 Migration: tabel baru `subscriptions` & `invoices` + RLS policies (tenant hanya lihat baris miliknya, super_admin lihat semua)
+- [x] 8.3 Setup Mailgun (util pengirim email transactional via REST API langsung, tanpa SDK tambahan) dan env var `MAILGUN_API_KEY`/`MAILGUN_DOMAIN`/`MAILGUN_FROM`
+- [x] 8.4 Update `POST /api/tenants/register`: wajib `whatsapp_number`, generate `email_verification_token`, kirim email verifikasi, buat baris `subscriptions` (trial, `trial_end` = +30 hari)
+- [x] 8.5 Endpoint `GET /api/verify-email` & `POST /api/verify-email/resend`
+- [x] 8.6 Halaman/UI: form registrasi tambah field WA; halaman "cek email Anda" pasca-registrasi (`/register/check-email`) + halaman verifikasi (`/verify-email`); blokir login dengan pesan jelas jika role `admin` dan `email_verified_at` masih null
+
+## Phase 9 — Perhitungan Tagihan & Pembatasan Akses `[pending]`
+
+**Goal:** Tagihan bulanan terhitung otomatis dari pendapatan bersih, dan akses POS dibatasi otomatis saat menunggak lewat grace period.
+**Depends on:** Phase 8
+
+- [ ] 9.1 Logika hitung pendapatan bersih per tenant per periode: margin non-konsinyasi (`transaction_items` tanpa `consignment_batch_id`) + `settlements.total_fee` dalam rentang periode
+- [ ] 9.2 Job/endpoint generate invoice bulanan (buat baris `invoices` dari `subscriptions` yang trial-nya sudah berakhir), hitung `amount_due`, `due_date`, `grace_end`
+- [ ] 9.3 Transisi status invoice otomatis (unpaid → overdue saat lewat `due_date`; `subscriptions.status` trial → active → grace → suspended mengikuti status invoice terbaru)
+- [ ] 9.4 Middleware/route guard: blokir rute Kasir/POS saat `subscriptions.status = suspended`, redirect ke halaman tagihan dengan pesan jelas; rute laporan & riwayat tetap dapat diakses read-only
+
+## Phase 10 — Integrasi Pembayaran Midtrans `[pending]`
+
+**Goal:** Tenant dapat membayar tagihan langsung lewat Midtrans dan melihat status/riwayat pembayarannya sendiri.
+**Depends on:** Phase 9
+
+- [ ] 10.1 Setup Midtrans SDK (sandbox key via env var `MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY`)
+- [ ] 10.2 Endpoint `POST /api/tenant/billing/:invoiceId/pay`: create Snap transaction, simpan `midtrans_order_id`
+- [ ] 10.3 Endpoint `POST /api/billing/webhook/midtrans`: verifikasi signature, update status invoice & subscription secara idempotent berdasarkan `order_id`
+- [ ] 10.4 Halaman dashboard tagihan tenant (`/dashboard/billing`): tagihan berjalan + tombol bayar, riwayat pembayaran dengan status
+
+## Phase 11 — Panel Super Admin — Billing `[pending]`
+
+**Goal:** Super Admin dapat mengelola fee per tenant, menandai pembayaran manual, dan memantau piutang platform secara keseluruhan.
+**Depends on:** Phase 10
+
+- [ ] 11.1 Endpoint & UI: lihat & edit `fee_percent` per tenant (`PATCH /api/admin/tenants/:id/fee`)
+- [ ] 11.2 Endpoint & UI: tandai invoice lunas manual (`PATCH /api/admin/invoices/:id/mark-paid`)
+- [ ] 11.3 Endpoint & UI: laporan piutang platform (`GET /api/admin/billing`) — pendapatan bersih semua tenant, tagihan seharusnya, status per tenant, filter per periode
+- [ ] 11.4 QA end-to-end: alur registrasi → verifikasi email → trial habis → invoice terbit → bayar via Midtrans sandbox → akses pulih; dan alur menunggak → grace period habis → POS terkunci → laporan tetap terbuka

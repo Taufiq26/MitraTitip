@@ -28,9 +28,16 @@ export async function login(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, email_verified_at")
     .eq("id", data.user.id)
     .single();
+
+  if (profile?.role === "admin" && !profile.email_verified_at) {
+    await supabase.auth.signOut();
+    return {
+      error: "Email belum diverifikasi. Cek inbox Anda atau minta kirim ulang dari halaman pendaftaran.",
+    };
+  }
 
   if (profile?.role === "super_admin") {
     redirect("/super-admin");
