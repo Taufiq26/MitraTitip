@@ -16,7 +16,7 @@
 | 6 | Panel Super Admin & Hardening | done | |
 | 7 | Peningkatan Kasir, Penitip & Integritas Data | done | |
 | 8 | Registrasi WA, Verifikasi Email & Fondasi Billing | done | |
-| 9 | Perhitungan Tagihan & Pembatasan Akses | pending | |
+| 9 | Perhitungan Tagihan & Pembatasan Akses | done | |
 | 10 | Integrasi Pembayaran Midtrans | pending | |
 | 11 | Panel Super Admin — Billing | pending | |
 
@@ -111,15 +111,15 @@
 - [x] 8.5 Endpoint `GET /api/verify-email` & `POST /api/verify-email/resend`
 - [x] 8.6 Halaman/UI: form registrasi tambah field WA; halaman "cek email Anda" pasca-registrasi (`/register/check-email`) + halaman verifikasi (`/verify-email`); blokir login dengan pesan jelas jika role `admin` dan `email_verified_at` masih null
 
-## Phase 9 — Perhitungan Tagihan & Pembatasan Akses `[pending]`
+## Phase 9 — Perhitungan Tagihan & Pembatasan Akses `[done]`
 
 **Goal:** Tagihan bulanan terhitung otomatis dari pendapatan bersih, dan akses POS dibatasi otomatis saat menunggak lewat grace period.
 **Depends on:** Phase 8
 
-- [ ] 9.1 Logika hitung pendapatan bersih per tenant per periode: margin non-konsinyasi (`transaction_items` tanpa `consignment_batch_id`) + `settlements.total_fee` dalam rentang periode
-- [ ] 9.2 Job/endpoint generate invoice bulanan (buat baris `invoices` dari `subscriptions` yang trial-nya sudah berakhir), hitung `amount_due`, `due_date`, `grace_end`
-- [ ] 9.3 Transisi status invoice otomatis (unpaid → overdue saat lewat `due_date`; `subscriptions.status` trial → active → grace → suspended mengikuti status invoice terbaru)
-- [ ] 9.4 Middleware/route guard: blokir rute Kasir/POS saat `subscriptions.status = suspended`, redirect ke halaman tagihan dengan pesan jelas; rute laporan & riwayat tetap dapat diakses read-only
+- [x] 9.1 Logika hitung pendapatan bersih per tenant per periode: margin non-konsinyasi (`transaction_items` tanpa `consignment_batch_id`) + `settlements.total_fee` (status paid) dalam rentang periode — `src/lib/billing/calculate-net-revenue.ts`
+- [x] 9.2 Job generate invoice bulanan via `GET /api/billing/generate` (dipicu Vercel Cron, `vercel.json`, otorisasi `CRON_SECRET`) — `src/lib/billing/generate-invoices.ts`
+- [x] 9.3 Status dihitung live (`src/lib/billing/subscription-status.ts`): trial → active → grace → suspended berdasarkan `trial_end` + invoice terbaru; invoice unpaid disapu jadi overdue tiap run cron; `subscriptions.status` disinkron sebagai cache
+- [x] 9.4 Guard di `src/app/dashboard/pos/layout.tsx` (bukan middleware/proxy global — menghindari query auth berulang per navigasi): redirect ke `/dashboard/billing` saat status `suspended`; rute laporan & riwayat tidak disentuh, tetap read-only
 
 ## Phase 10 — Integrasi Pembayaran Midtrans `[pending]`
 

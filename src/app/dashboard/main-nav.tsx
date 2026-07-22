@@ -15,6 +15,7 @@ const BASE_NAV = [
 const ADMIN_NAV = [
   { href: "/dashboard/reports", label: "Laporan" },
   { href: "/dashboard/users", label: "Pengguna" },
+  { href: "/dashboard/billing", label: "Tagihan" },
 ];
 
 export function MainNav({ role }: { role: string }) {
