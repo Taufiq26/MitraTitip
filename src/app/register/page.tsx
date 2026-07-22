@@ -127,6 +127,19 @@ export default function RegisterPage() {
                 className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
               />
             </div>
+            <div className="space-y-3 rounded-xl border border-foreground/10 bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground">
+              <p className="font-bold uppercase tracking-wider text-foreground/70">Syarat &amp; Ketentuan Penggunaan</p>
+              <ul className="list-disc space-y-1.5 pl-4">
+                <li><strong className="text-foreground/80">30 hari pertama gratis</strong> — masa trial penuh tanpa biaya apa pun.</li>
+                <li>Setelah trial berakhir, dikenakan biaya langganan <strong className="text-foreground/80">2% per bulan dari pendapatan bersih toko</strong> (margin penjualan + komisi konsinyasi milik toko, <em>bukan</em> dari total omzet). Persentase dapat dinegosiasikan untuk toko dengan skala besar — hubungi kami via WhatsApp.</li>
+                <li>Tagihan dihitung otomatis tiap akhir periode dan dapat dibayar langsung lewat Midtrans.</li>
+                <li>Jika tagihan tidak dibayar hingga jatuh tempo + masa tenggang, akses fitur Kasir dibatasi sementara. Data &amp; riwayat transaksi Anda tetap aman dan bisa diakses kapan saja.</li>
+              </ul>
+              <label className="flex items-start gap-2 pt-1 font-medium text-foreground/80">
+                <input type="checkbox" name="agree_terms" required className="mt-0.5 h-4 w-4 shrink-0" />
+                Saya membaca dan menyetujui ketentuan di atas.
+              </label>
+            </div>
             {error && <p className="text-sm font-medium text-destructive">{error}</p>}
             <div className="pt-4">
               <Button type="submit" className="h-12 w-full text-base font-bold shadow-sm" disabled={isPending}>

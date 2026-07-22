@@ -18,7 +18,7 @@
 | 8 | Registrasi WA, Verifikasi Email & Fondasi Billing | done | |
 | 9 | Perhitungan Tagihan & Pembatasan Akses | done | |
 | 10 | Integrasi Pembayaran Midtrans | done | |
-| 11 | Panel Super Admin — Billing | pending | |
+| 11 | Panel Super Admin — Billing | done (QA manual tertunda) | |
 
 ## Phase 1 — Setup Proyek & Fondasi Multi-Tenant `[done]`
 
@@ -131,12 +131,13 @@
 - [x] 10.3 Endpoint `POST /api/billing/webhook/midtrans`: verifikasi signature (`src/lib/billing/midtrans-signature.ts`), update status invoice & subscription idempotent berdasarkan `order_id`
 - [x] 10.4 Halaman dashboard tagihan tenant (`/dashboard/billing`) lengkap: tagihan berjalan + tombol bayar (Snap.js), riwayat tagihan dengan status; link "Tagihan" ditambah ke nav admin
 
-## Phase 11 — Panel Super Admin — Billing `[pending]`
+## Phase 11 — Panel Super Admin — Billing `[done]`
 
 **Goal:** Super Admin dapat mengelola fee per tenant, menandai pembayaran manual, dan memantau piutang platform secara keseluruhan.
 **Depends on:** Phase 10
 
-- [ ] 11.1 Endpoint & UI: lihat & edit `fee_percent` per tenant (`PATCH /api/admin/tenants/:id/fee`)
-- [ ] 11.2 Endpoint & UI: tandai invoice lunas manual (`PATCH /api/admin/invoices/:id/mark-paid`)
-- [ ] 11.3 Endpoint & UI: laporan piutang platform (`GET /api/admin/billing`) — pendapatan bersih semua tenant, tagihan seharusnya, status per tenant, filter per periode
-- [ ] 11.4 QA end-to-end: alur registrasi → verifikasi email → trial habis → invoice terbit → bayar via Midtrans sandbox → akses pulih; dan alur menunggak → grace period habis → POS terkunci → laporan tetap terbuka
+- [x] 11.1 Endpoint & UI: lihat & edit `fee_percent` per tenant (`PATCH /api/admin/tenants/:id/fee`) — inline di `/super-admin/billing`
+- [x] 11.2 Endpoint & UI: tandai invoice lunas manual (`PATCH /api/admin/invoices/:id/mark-paid`)
+- [x] 11.3 Halaman & data laporan piutang platform (`/super-admin/billing`, dibangun langsung dari Supabase admin client alih-alih endpoint JSON terpisah karena dikonsumsi oleh 1 halaman saja) — pendapatan bersih & tagihan per tenant, status live, total piutang outstanding
+- [x] 11.5 Info Syarat & Ketentuan (trial 30 hari gratis + fee % pendapatan bersih + konsekuensi tidak bayar) ditampilkan langsung di halaman pendaftaran, dengan checkbox persetujuan wajib sebelum submit
+- [ ] 11.4 QA end-to-end manual (alur registrasi → verifikasi email → trial habis → invoice terbit → bayar via Midtrans sandbox → akses pulih) — **belum dijalankan**, butuh kredensial Midtrans/Mailgun asli untuk diuji secara live

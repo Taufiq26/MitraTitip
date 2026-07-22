@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { logout } from "@/app/logout/actions";
@@ -37,7 +38,12 @@ export default async function SuperAdminLayout({
         
         {/* Navigation (Center) */}
         <nav className="hidden items-center justify-center gap-8 lg:flex">
-          {/* Tambahkan link menu super-admin di sini jika ada */}
+          <Link href="/super-admin" className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+            Tenant
+          </Link>
+          <Link href="/super-admin/billing" className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+            Billing
+          </Link>
         </nav>
 
         {/* Actions (Right) */}

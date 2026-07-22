@@ -130,27 +130,19 @@
 - **Response 200:** `{ "success": true, "data": { "id": "uuid", "status": "manual_paid", "marked_paid_by": "uuid" }, "error": null }`
 - **Errors:** 403 bukan super_admin, 404 invoice tidak ditemukan, 409 invoice sudah berstatus `paid`/`manual_paid`
 
-### `GET /api/admin/billing`
+### Laporan piutang platform (Super Admin)
 
-- **Auth:** Bearer JWT (role `super_admin` saja)
-- **Response 200:**
+Bukan endpoint terpisah — dibangun langsung sebagai Supabase query di server component `/super-admin/billing` (mengikuti konvensi "CRUD standar via Supabase client" di atas, karena hanya dikonsumsi oleh satu halaman). Menampilkan pendapatan bersih, fee %, tagihan berjalan, dan status live per tenant, plus total piutang outstanding.
 
-```json
-{ "success": true, "data": [ { "tenant_id": "uuid", "tenant_name": "Kantin Melati", "period": "2026-07", "net_revenue": 5000000, "fee_percent": 2, "amount_due": 100000, "status": "unpaid", "due_date": "2026-08-05" } ], "error": null, "meta": { "total_outstanding": 100000 } }
-```
+### Dashboard tagihan tenant
 
-- **Errors:** 403 bukan super_admin — laporan piutang platform di seluruh tenant, dapat difilter per periode lewat query param `?period=2026-07`
+Bukan endpoint terpisah — dibangun langsung sebagai Supabase query di server component `/dashboard/billing` (RLS `invoices_select`/`subscriptions_select` membatasi ke tenant sendiri). Menampilkan tagihan berjalan + riwayat.
 
-### `GET /api/tenant/billing`
+### `GET /api/billing/generate`
 
-- **Auth:** Bearer JWT (role `admin` tenant tersebut)
-- **Response 200:**
-
-```json
-{ "success": true, "data": { "current": { "id": "uuid", "period": "2026-07", "amount_due": 100000, "due_date": "2026-08-05", "grace_end": "2026-08-10", "status": "unpaid" }, "history": [] }, "error": null }
-```
-
-- **Errors:** 401 token invalid — hanya menampilkan tagihan milik tenant sendiri (via `tenant_id` dari profile, bukan dari request)
+- **Auth:** header `Authorization: Bearer $CRON_SECRET` (bukan sesi user — dipanggil oleh Vercel Cron, lihat `vercel.json`)
+- **Response 200:** `{ "success": true, "data": { "generated": 3, "markedOverdue": 1 }, "error": null }`
+- **Errors:** 401 jika header tidak cocok atau `CRON_SECRET` belum diset, 500 jika perhitungan gagal — idempotent per tenant per periode (tidak generate invoice dobel untuk periode yang sama)
 
 ### `POST /api/tenant/billing/:invoiceId/pay`
 
