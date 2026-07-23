@@ -52,7 +52,7 @@ export function PayInvoiceButton({ invoiceId, clientKey, isProduction }: PayInvo
   return (
     <div>
       <Script src={snapUrl} data-client-key={clientKey} strategy="afterInteractive" />
-      <Button onClick={handlePay} disabled={isPending} className="h-11">
+      <Button onClick={handlePay} disabled={isPending} className="h-14 w-full text-base font-bold shadow-md transition-transform active:scale-[0.98]">
         {isPending ? "Memproses..." : "Bayar Sekarang"}
       </Button>
       {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}

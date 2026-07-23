@@ -70,20 +70,26 @@ export async function generateDueInvoices(supabase: SupabaseClient): Promise<Gen
       periodEnd,
     });
 
-    const amountDue = Math.round((netRevenue * Number(subscription.fee_percent)) / 100);
+    const feePercent = Number(subscription.fee_percent);
+    const amountDue = Math.round((netRevenue * feePercent) / 100);
     const dueDate = toDateString(addDays(periodEnd, INVOICE_DUE_DAYS));
     const graceEnd = toDateString(addDays(periodEnd, INVOICE_DUE_DAYS + INVOICE_GRACE_DAYS));
+
+    // Tenant dengan fee 0% (mis. pilot/beta) tetap dapat catatan invoice untuk riwayat,
+    // tapi otomatis lunas — tidak ada yang perlu dibayar sehingga tidak boleh memblokir akses.
+    const isFeeExempt = feePercent === 0;
 
     const { error: insertError } = await supabase.from("invoices").insert({
       tenant_id: subscription.tenant_id,
       period_start: periodStart,
       period_end: periodEnd,
       net_revenue: netRevenue,
-      fee_percent_snapshot: subscription.fee_percent,
+      fee_percent_snapshot: feePercent,
       amount_due: amountDue,
       due_date: dueDate,
       grace_end: graceEnd,
-      status: "unpaid",
+      status: isFeeExempt ? "paid" : "unpaid",
+      paid_at: isFeeExempt ? new Date().toISOString() : null,
     });
 
     if (insertError) {
