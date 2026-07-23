@@ -41,7 +41,7 @@ const FEATURES = [
   {
     icon: ShieldCheck,
     title: "Data Aman & Terisolasi",
-    description: "Setiap toko punya data terpisah sepenuhnya, tersimpan aman di Supabase dengan Row Level Security.",
+    description: "Setiap toko punya data terpisah sepenuhnya, tersimpan aman di database dengan Row Level Security.",
   },
 ];
 

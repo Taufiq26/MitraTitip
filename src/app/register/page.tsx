@@ -42,7 +42,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[400px_1fr] xl:grid-cols-[500px_1fr]">
       {/* Brand Panel (Hidden on mobile) */}
       <div className="relative hidden overflow-hidden bg-primary p-12 text-primary-foreground lg:flex flex-col justify-center">
         {/* Ambient CSS glow effects for depth */}
@@ -63,97 +63,109 @@ export default function RegisterPage() {
       </div>
 
       {/* Action Panel */}
-      <div className="flex flex-col justify-center bg-background p-8 sm:p-12 lg:px-24">
-        <div className="mx-auto w-full max-w-sm space-y-8">
-          <div className="space-y-1.5">
-            <h2 className="text-3xl font-extrabold tracking-tight">Daftarkan Toko Anda.</h2>
-            <p className="text-base text-muted-foreground">
-              Buat akun Admin untuk mulai mengelola MitraTitip.
-            </p>
-          </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="tenant_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nama Toko/Kantin</Label>
-              <Input 
-                id="tenant_name" 
-                name="tenant_name" 
-                required 
-                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
-              />
+      <div className="flex flex-col justify-center bg-background p-8 sm:p-12 lg:p-16 xl:p-24">
+        <div className="mx-auto w-full max-w-[400px] xl:max-w-[900px]">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_380px] xl:gap-x-16 xl:gap-y-10">
+            
+            <div className="space-y-8">
+              <div className="space-y-1.5">
+                <h2 className="text-3xl font-extrabold tracking-tight text-foreground">Daftarkan Toko Anda.</h2>
+                <p className="text-base text-muted-foreground">
+                  Buat akun Admin untuk mulai mengelola MitraTitip.
+                </p>
+              </div>
+              
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="tenant_name" className="text-sm font-medium text-foreground">Nama Toko / Kantin</Label>
+                    <Input 
+                      id="tenant_name" 
+                      name="tenant_name" 
+                      required 
+                      className="h-12 bg-background text-base shadow-sm md:text-base"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin_name" className="text-sm font-medium text-foreground">Nama Anda</Label>
+                    <Input 
+                      id="admin_name" 
+                      name="admin_name" 
+                      required 
+                      className="h-12 bg-background text-base shadow-sm md:text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp_number" className="text-sm font-medium text-foreground">Nomor WhatsApp</Label>
+                  <Input
+                    id="whatsapp_number"
+                    name="whatsapp_number"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="081234567890"
+                    required
+                    className="h-12 bg-background text-base shadow-sm md:text-base"
+                  />
+                  <p className="text-xs text-muted-foreground">Dipakai tim kami untuk follow-up terkait akun Anda.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="admin_email" className="text-sm font-medium text-foreground">Email</Label>
+                  <Input
+                    id="admin_email"
+                    name="admin_email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="h-12 bg-background text-base shadow-sm md:text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="admin_password" className="text-sm font-medium text-foreground">Password</Label>
+                  <Input
+                    id="admin_password"
+                    name="admin_password"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    required
+                    className="h-12 bg-background text-base shadow-sm md:text-base"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="admin_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nama Anda</Label>
-              <Input 
-                id="admin_name" 
-                name="admin_name" 
-                required 
-                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
-              />
+            
+            <div className="flex flex-col">
+              <div className="space-y-4 rounded-xl border bg-muted/30 p-5 text-sm leading-relaxed text-muted-foreground">
+                <p className="font-semibold text-foreground">Syarat &amp; Ketentuan Penggunaan</p>
+                <ul className="list-disc space-y-2 pl-4 marker:text-muted-foreground">
+                  <li><strong className="font-semibold text-foreground">30 hari pertama gratis</strong> — masa trial penuh tanpa biaya apa pun.</li>
+                  <li>Setelah trial berakhir, dikenakan biaya langganan <strong className="font-semibold text-foreground">2% per bulan dari pendapatan bersih toko</strong> (margin penjualan + komisi konsinyasi milik toko, <em>bukan</em> dari total omzet). Persentase dapat dinegosiasikan untuk skala besar via WhatsApp.</li>
+                  <li>Tagihan dihitung otomatis tiap akhir periode dan dapat dibayar langsung lewat Midtrans.</li>
+                  <li>Jika tagihan tidak dibayar hingga masa tenggang, akses fitur Kasir dibatasi sementara. Data &amp; riwayat transaksi Anda tetap aman.</li>
+                </ul>
+                <label className="flex items-start gap-3 pt-2">
+                  <input type="checkbox" name="agree_terms" required className="mt-0.5 h-5 w-5 shrink-0 accent-primary" />
+                  <span className="font-medium text-foreground">Saya membaca dan menyetujui ketentuan di atas.</span>
+                </label>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp_number" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nomor WhatsApp</Label>
-              <Input
-                id="whatsapp_number"
-                name="whatsapp_number"
-                type="tel"
-                autoComplete="tel"
-                placeholder="081234567890"
-                required
-                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
-              />
-              <p className="text-xs text-muted-foreground">Dipakai tim kami untuk follow-up terkait akun Anda.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="admin_email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</Label>
-              <Input
-                id="admin_email"
-                name="admin_email"
-                type="email"
-                autoComplete="email"
-                required
-                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="admin_password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
-              <Input
-                id="admin_password"
-                name="admin_password"
-                type="password"
-                autoComplete="new-password"
-                minLength={8}
-                required
-                className="h-12 bg-muted/20 text-base transition-colors focus-visible:bg-transparent"
-              />
-            </div>
-            <div className="space-y-3 rounded-xl border border-foreground/10 bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground">
-              <p className="font-bold uppercase tracking-wider text-foreground/70">Syarat &amp; Ketentuan Penggunaan</p>
-              <ul className="list-disc space-y-1.5 pl-4">
-                <li><strong className="text-foreground/80">30 hari pertama gratis</strong> — masa trial penuh tanpa biaya apa pun.</li>
-                <li>Setelah trial berakhir, dikenakan biaya langganan <strong className="text-foreground/80">2% per bulan dari pendapatan bersih toko</strong> (margin penjualan + komisi konsinyasi milik toko, <em>bukan</em> dari total omzet). Persentase dapat dinegosiasikan untuk toko dengan skala besar — hubungi kami via WhatsApp.</li>
-                <li>Tagihan dihitung otomatis tiap akhir periode dan dapat dibayar langsung lewat Midtrans.</li>
-                <li>Jika tagihan tidak dibayar hingga jatuh tempo + masa tenggang, akses fitur Kasir dibatasi sementara. Data &amp; riwayat transaksi Anda tetap aman dan bisa diakses kapan saja.</li>
-              </ul>
-              <label className="flex items-start gap-2 pt-1 font-medium text-foreground/80">
-                <input type="checkbox" name="agree_terms" required className="mt-0.5 h-4 w-4 shrink-0" />
-                Saya membaca dan menyetujui ketentuan di atas.
-              </label>
-            </div>
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <div className="pt-4">
-              <Button type="submit" className="h-12 w-full text-base font-bold shadow-sm" disabled={isPending}>
+
+            <div className="space-y-4 pt-2 xl:col-span-2 xl:pt-0">
+              {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
+              <Button type="submit" className="h-12 w-full text-base font-bold shadow-sm transition-transform active:scale-[0.98]" disabled={isPending}>
                 {isPending ? "Mendaftarkan..." : "Buat Akun"}
               </Button>
+              
+              <p className="text-center text-base text-muted-foreground">
+                Sudah punya akun?{" "}
+                <Link href="/login" className="font-medium text-foreground transition-colors hover:text-primary underline underline-offset-4">
+                  Masuk di sini
+                </Link>
+              </p>
             </div>
           </form>
-          
-          <p className="text-center text-base text-muted-foreground">
-            Sudah punya akun?{" "}
-            <Link href="/login" className="font-medium text-foreground/70 transition-colors hover:text-foreground underline underline-offset-4">
-              Masuk di sini
-            </Link>
-          </p>
         </div>
       </div>
     </div>
