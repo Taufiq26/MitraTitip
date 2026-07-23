@@ -10,6 +10,8 @@ import {
   Users,
   ShieldCheck,
   Check,
+  Mail,
+  AtSign,
 } from "lucide-react";
 
 const FEATURES = [
@@ -78,6 +80,7 @@ export default async function Home() {
           <nav className="hidden items-center gap-8 md:flex">
             <a href="#fitur" className="text-sm font-bold text-muted-foreground transition-colors hover:text-foreground">Fitur</a>
             <a href="#harga" className="text-sm font-bold text-muted-foreground transition-colors hover:text-foreground">Harga</a>
+            <a href="#kontak" className="text-sm font-bold text-muted-foreground transition-colors hover:text-foreground">Kontak</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
@@ -164,6 +167,26 @@ export default async function Home() {
             <Link href="/register" className="mt-8 block">
               <Button size="lg" className="h-14 w-full text-base font-bold shadow-md">Mulai Gratis Sekarang</Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="kontak" className="mx-auto max-w-6xl px-6 py-20">
+        <div className="rounded-[2rem] bg-primary/5 px-6 py-12 text-center sm:py-16">
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ada Pertanyaan?</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg font-medium text-muted-foreground">
+            Jika ingin ada yang ditanyakan, butuh penjelasan lebih lanjut, atau ingin menyampaikan kritik dan saran, jangan ragu untuk menghubungi kami melalui:
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+            <a href="mailto:bushido.coder7@gmail.com" className="flex items-center gap-2 rounded-full bg-background px-6 py-3.5 text-sm font-bold shadow-sm transition-transform hover:scale-105 ring-1 ring-foreground/5">
+              <Mail className="h-5 w-5 text-primary" />
+              bushido.coder7@gmail.com
+            </a>
+            <a href="https://instagram.com/gwetaufiq" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-full bg-background px-6 py-3.5 text-sm font-bold shadow-sm transition-transform hover:scale-105 ring-1 ring-foreground/5">
+              <AtSign className="h-5 w-5 text-primary" />
+              @gwetaufiq
+            </a>
           </div>
         </div>
       </section>
