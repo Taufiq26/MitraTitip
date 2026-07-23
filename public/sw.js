@@ -1,4 +1,4 @@
-const CACHE_NAME = "mitratitip-shell-v1";
+const CACHE_NAME = "mitratitip-shell-v2";
 const APP_SHELL = ["/dashboard", "/dashboard/pos", "/login", "/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -28,6 +28,9 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+  
+  // Ignore Next.js data requests (RSC) to prevent reload loops
+  if (url.searchParams.has("_rsc") || request.headers.get("RSC") === "1") return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
